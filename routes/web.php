@@ -27,12 +27,17 @@ Route::prefix('sekolah')->group( function (){
 	Route::resource('siswa','SiswaController');
 });
 
+//Data Kelurahan
+Route::resource('kelurahan', 'KelurahanController');
+
 //Pemeriksaan Gigi
 Route::resource('pemeriksaanGigi', 'PemeriksaanGigiController');
 Route::get('/pemeriksaanGigiSekolahAjax','PemeriksaanGigiController@pemeriksaanGigiSekolahAjax');
 Route::prefix('pemeriksaanGigi')->group(function(){
-	Route::post('{id}/periksa', 'PemeriksaanGigiController@store');
+	Route::get('{id}/periksa', 'PemeriksaanGigiController@createPemeriksaanGigi')->name("periksaGigi");
+	Route::get('{id}/periksa/{idDetail}/edit','PemeriksaanGigiController@edit');
 });
+Route::post('storePemeriksaanGigi/{id}','PemeriksaanGigiController@storePemeriksaanGigi')->name('storePemeriksaanGigi');
 
 Route::get('/pemeriksaan','ExController@pemeriksaan');
 
@@ -41,4 +46,10 @@ Route::get('kelasEditAjax','KelasController@kelasEditAjax');
 Route::get('siswaEditAjax','SiswaController@siswaEditAjax');
 Route::post('importExcelSekolah','SekolahController@importExcelSekolah');
 Route::post('importExcelSiswa','SiswaController@importExcelSiswa');
+Route::post('siswaByKelasAjax','PemeriksaanGigiController@siswaByKelasAjax');
+Route::post('detailSiswa','PemeriksaanGigiController@detailSiswa');
+Route::get('detailPemeriksaanGigiAjax/{id}','PemeriksaanGigiController@detailPemeriksaanGigiAjax');
+Route::get('indekKariesGd/{id}','PemeriksaanGigiController@indekKariesGd');
+Route::get('kelurahanAjax','KelurahanController@kelurahanAjax');
+Route::get('kelurahanEditAjax','KelurahanController@kelurahanEditAjax');
 

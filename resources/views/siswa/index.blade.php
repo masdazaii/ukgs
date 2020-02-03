@@ -272,11 +272,11 @@
             },
             acceptedFiles: ".xls,.xlsx",
             success : function(file,response){
-                console.log(response);
+                $("#table").DataTable().ajax.reload();
                 $('#excelForm').toggle();
                 Swal.fire({
                     type: 'success',
-                    title : 'Data dalam excel berhasil ditambahkan',
+                    title : 'Data siswa dalam file excel berhasil ditambahkan',
                 });
             }
         }
@@ -327,7 +327,7 @@
                     $("#table").DataTable().ajax.reload();
                     Swal.fire({
                         type: 'success',
-                        title : 'Data sekolah berhasil dihapus',
+                        title : 'Data siswa berhasil dihapus',
                     });
                 }
             })

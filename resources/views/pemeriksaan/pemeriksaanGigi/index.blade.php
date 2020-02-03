@@ -41,6 +41,7 @@
     </div>
     <form id="post-form" action="" method="POST" style="display: none;">
         @csrf
+        <input id="sekolahId" type="hidden" name="sekolahId">
     </form>
 @endsection
 @section('librariesJS')
@@ -75,8 +76,8 @@
         $(document).on('click','.pilih',function(){
             event.preventDefault();
             var id = $(this).data('id');
-            var url = '{{ url('/pemeriksaanGigi/'.':id'.'/periksa') }}';
-            url = url.replace(':id',id);
+            $("#sekolahId").val(id);
+            var url = '{{ route('pemeriksaanGigi.store') }}';
             console.log(url);
             $('#post-form').attr('action',url);
             $('#post-form').submit();
