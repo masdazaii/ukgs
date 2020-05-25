@@ -92,15 +92,15 @@
     <!-- Core JS files -->
     <script src="{{ asset('limitless/global_assets/js/main/jquery.min.js') }}"></script>
     <script src="{{ asset('limitless/global_assets/js/main/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('limitless/global_assets/js/plugins/loaders/blockui.min.js') }}"></script>
-    <script src="{{ asset('limitless/global_assets/js/plugins/ui/ripple.min.js') }}"></script>
     <!-- /core JS files -->
 
-    <!-- Theme JS files -->
-    <script src="{{ asset('limitless/global_assets/js/plugins/forms/styling/uniform.min.js') }}"></script>
-
     <script src="{{ asset('limitless/layout_1/assets/js/app.js') }}"></script>
-    <script src="{{ asset('limitless/global_assets/js/demo_pages/login.js') }}"></script>
+    <script src="{{ asset('limitless/global_assets/js/plugins/forms/styling/uniform.min.js') }}"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('.form-input-styled').uniform();
+        })
+    </script>
     <!-- /theme JS files -->
 
 </head>
@@ -108,22 +108,25 @@
 <body>
     <!-- Page content -->
     <div class="page-content">
-
+        
         <!-- Main content -->
         <div class="content-wrapper">
-
+            @if(session()->has('successRegister'))
+                <div class="alert bg-success text-white alert-styled-left alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+                    <span class="font-weight-semibold">{{ Session()->get('successRegister') }}</span>
+                </div>
+            @endif
             <!-- Content area -->
             <div class="content d-flex justify-content-center align-items-center">
-
+                
                 <!-- Login form -->
                 <form class="login-form" action="{{ route('login') }}" method="post">
                     @csrf
                     <div class="card mb-0">
                         <div class="card-body">
-                            <div class="text-center mb-3">
-                                <i class="icon-reading icon-2x text-slate-300 border-slate-300 border-3 rounded-round p-3 mb-3 mt-1"></i>
+                            <div class="text-center mb-2">
                                 <h5 class="mb-0">Login to your account</h5>
-                                <span class="d-block text-muted">Your credentials</span>
                             </div>
 
                             <div class="form-group form-group-feedback form-group-feedback-left">
@@ -164,7 +167,11 @@
                                 <button type="submit" class="btn btn-primary btn-block">Sign in <i class="icon-circle-right2 ml-2"></i></button>
                             </div>
 
-                            <span class="form-text text-center text-muted">By continuing, you're confirming that you've read our <a href="#">Terms &amp; Conditions</a> and <a href="#">Cookie Policy</a></span>
+                            <div class="form-group">
+                                <a href="{{ route('register') }}" class="btn btn-light btn-block">Sign up</a>
+                            </div>
+
+
                         </div>
                     </div>
                 </form>

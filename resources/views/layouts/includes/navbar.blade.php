@@ -23,15 +23,21 @@
       </li>
     </ul>
     <ul class="navbar-nav ml-md-auto">
-      <li class="nav-item">
-        <a href="{{ route('logout') }}" onclick="event.preventDefault();
-            document.getElementById('logout-form').submit();" class="navbar-nav-link">
-          <i class="icon-switch2"></i>
-          <span class="d-md-none ml-2">Logout</span>
+      <li class="nav-item dropdown dropdown-user">
+        <a href="#" class="navbar-nav-link d-flex align-items-center dropdown-toggle" data-toggle="dropdown">
+          <span>{{ Auth::user()->name }}</span>
         </a>
-        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-            @csrf
-        </form>
+
+        <div class="dropdown-menu dropdown-menu-right">
+          <a href="#" class="dropdown-item"><i class="icon-cog5"></i> Account settings</a>
+          <a href="{{ route('logout') }}" onclick="event.preventDefault();
+              document.getElementById('logout-form').submit();" class="dropdown-item">
+            <i class="icon-switch2"></i>Logout
+          </a>
+          <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+              @csrf
+          </form>
+        </div>
       </li>
     </ul>
   </div>

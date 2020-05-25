@@ -3,15 +3,19 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Sekolah extends Model
 {
+    use SoftDeletes;
     /**
      * The table associated with the model.
      *
      * @var string
      */
     protected $table = 'sekolah';
+
+    protected $dates = ['deleted_at'];
 
 
     /**
@@ -31,6 +35,7 @@ class Sekolah extends Model
         'sekolah_name',
         'sekolah_type',
         'npsn',
+        'kelurahan',
         'alamat',
         'kecamatan',
         'kota_administrasi',
@@ -38,14 +43,13 @@ class Sekolah extends Model
         'updated_at',
     ];
 
-
-    public function pemeriksaanGigi()
-    {
-        return $this->hasOne('App\PemeriksaanGigi','sekolah_id','sekolah_id');
-    }
-
     public function kelas()
     {
         return $this->hasMany('App\Kelas','sekolah_id','sekolah_id');
+    }
+
+    public function kelurahan()
+    {
+        return $this->hasOne('App\Kelurahan','kelurahan_id','kelurahan');
     }
 }

@@ -95,9 +95,17 @@
           <a href="#" class="nav-link"><i class="icon-accessibility"></i> <span>Pemeriksaan</span></a>
           <ul class="nav nav-group-sub" data-submenu-title="Layouts">
             <li class="nav-item"><a href="{{ URL::to('/pemeriksaanGigi') }}" class="nav-link">Pemeriksaan Gigi</a></li>
-            {{-- <li class="nav-item"><a href="#" class="nav-link">Pemeriksaan Kalori</a></li>
-            <li class="nav-item"><a href="#" class="nav-link">Pemeriksaan Kesehatan</a></li> --}}
+            <li class="nav-item"><a href="{{ URL::to('/pemeriksaanImt') }}" class="nav-link">Pemeriksaan IMT</a></li>
+            <li class="nav-item"><a href="{{ URL::to('/pemeriksaanSosial') }}" class="nav-link">Pemeriksaan Sosial</a></li>
+            <li class="nav-item"><a href="{{ URL::to('/pemeriksaanPtm') }}" class="nav-link">Pemeriksaan Penyakit Tidak Menular</a></li>
+            <li class="nav-item"><a href="{{ URL::to('/pemeriksaanBw') }}" class="nav-link">Pemeriksaan Buta Warna</a></li>
           </ul>
+        </li>
+        <li class="nav-item">
+          <a href="{{ URL::to('/rujukan') }}" class="nav-link"><i class="icon-googleplus5"></i> <span>Rujukan</span></a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ URL::to('/user') }}" class="nav-link"><i class="icon-users"></i><span>Data Pengguna</span></a>
         </li>
       </ul>
     </div>

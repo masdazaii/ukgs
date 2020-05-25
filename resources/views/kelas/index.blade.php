@@ -24,7 +24,26 @@
 
 	<div class="card">
         <div class="card-header">
-        	<button class="btn btn-primary" data-toggle="modal" data-target="#modal_form_vertical">Tambah kelas baru</button>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="text-left">
+                        <button class="btn btn-primary" data-toggle="modal" data-target="#modal_form_vertical">Tambah kelas baru</button>
+                    </div>      
+                </div>
+                <div class="col-md-6">
+                    <div class="text-right">
+                        <button id="excel" class="btn btn-success"><i class="icon-file-excel mr-1"></i>Input Kelas dengan excel</button>
+                    </div>  
+                </div>
+            </div>
+            <div id="excelForm" class="card mt-3" style="display: none;">
+                <div class="card-header">
+                    <p class="font-weight-semibold">Upload file excel disini</p>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url('importExcelKelas') }}" class="dropzone" id="dropzone">@csrf</form>
+                </div>
+            </div>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -34,7 +53,7 @@
                             <th>id</th>
                             <th>Sekolah</th>
                             <th>Kelas</th>
-                            <th width="25%">Action</th>
+                            <th width="30%">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -52,19 +71,19 @@
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
 
-                <form action="{{ route('kelas.store') }}" method="post" enctype="multipart/form-data">
+                <form id="createForm" action="" method="post" enctype="multipart/form-data">
                     @csrf
                     <div class="modal-body">
                         <div class="form-group">
                             <label>Nama Kelas</label>
-                            <input id="kelasName" type="text" placeholder="Silahkan masukan nama kelas" class="form-control" name="kelasName">
+                            <input id="kelasName" type="text" placeholder="Silahkan masukan nama kelas" class="form-control" name="kelasName" required>
                             <input type="hidden" name="sekolahId" value="{{ $sekolah->sekolah_id }}">
                         </div>
                     </div>
 
                     <div class="modal-footer">
                         <button type="button" class="btn btn-link" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn bg-primary">Submit form</button>
+                        <button type="button" class="btn bg-primary storeSubmit">Submit form</button>
                     </div>
                 </form>
             </div>
@@ -86,14 +105,12 @@
                     <div class="modal-body">
                         <div class="form-group">
                             <label>Nama Kelas</label>
-                            <input id="kelasNameEdit" type="text" placeholder="Silahkan masukan nama kelas" class="form-control" name="kelasName">
-                            <input id="sekolahId" type="hidden" name="sekolahId" value="{{ $sekolah->sekolah_id }}">
+                            <input id="kelasNameEdit" type="text" placeholder="Silahkan masukan nama kelas" class="form-control" name="kelasName" required>
                         </div>
                     </div>
-
                     <div class="modal-footer">
                         <button type="button" class="btn btn-link" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn bg-primary">Submit form</button>
+                        <button type="button" class="btn bg-primary editSubmit">Submit form</button>
                     </div>
                 </form>
             </div>
@@ -102,14 +119,21 @@
     <!-- /vertical form modal -->
 @endsection
 @section('librariesJS')
-	<script type="text/javascript" src="{{ asset('limitless/global_assets/js/plugins/tables/datatables/datatables.min.js') }}"></script>
-	<script type="text/javascript" src="{{ asset('limitless/global_assets/js/plugins/forms/selects/select2.min.js') }}"></script>
-	<script type="text/javascript" src="{{ asset('limitless/global_assets/js/demo_pages/datatables_basic.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('limitless/global_assets/js/demo_pages/components_dropdowns.js') }}"></script>
+	<script src="{{ asset('limitless/global_assets/js/plugins/tables/datatables/datatables.min.js') }}"></script>
+    <script src="{{ asset('limitless/global_assets/js/plugins/forms/validation/validate.min.js') }}"></script>
+	<script src="{{ asset('limitless/global_assets/js/demo_pages/datatables_basic.js') }}"></script>
     <script src="{{ asset('limitless/global_assets/js/plugins/notifications/sweet_alert.min.js') }}"></script>
+    <script src="{{ asset('limitless/global_assets/js/plugins/uploaders/dropzone.min.js') }}"></script>
+    <script src="{{ asset('limitless/global_assets/js/demo_pages/uploader_dropzone.js') }}"></script>
 @endsection
 @section('script')
 	<script>
+        const swalInit = swal.mixin({
+            buttonsStyling: false,
+            confirmButtonClass: 'btn btn-primary',
+            cancelButtonClass: 'btn btn-light'
+        });
+
 		$(document).ready(function() {
             console.log("bangsat");
             $("#table").DataTable({
@@ -128,22 +152,126 @@
                 ],
                 "fixedColumns": true,
             });
+
+            $('#excel').on('click',function(){
+                $('#excelForm').toggle();
+            });
+
+            $('.storeSubmit').on('click',function(){
+                const createForm = $('#createForm');
+                createForm.validate({
+                    errorClass: 'validation-invalid-label',
+                    highlight: function(element, errorClass) {
+                        $(element).removeClass(errorClass);
+                    },
+                    unhighlight: function(element, errorClass) {
+                        $(element).removeClass(errorClass);
+                    }
+                });
+
+                if(createForm.valid()){
+                    const request = $('#createForm').serialize();
+                    $.ajax({
+                        url: '{{ route('kelas.store') }}',
+                        method: 'POST',
+                        data: request,
+                        success:function(response){
+                            $("#table").DataTable().ajax.reload();
+                            $('#modal_form_vertical').modal('hide');
+                            swalInit({
+                                type: 'success',
+                                title : response,
+                            });
+                        },
+                        error:function(xhr,status,error){
+                            swalInit({
+                                type: 'error',
+                                title : xhr.responseText,
+                            });
+                        }
+                    })
+                }
+            })
+
+            $('.editSubmit').on('click',function(){
+                const editForm = $('#editForm');
+                editForm.validate({
+                    errorClass: 'validation-invalid-label',
+                    highlight: function(element, errorClass) {
+                        $(element).removeClass(errorClass);
+                    },
+                    unhighlight: function(element, errorClass) {
+                        $(element).removeClass(errorClass);
+                    }
+                });
+
+                if(editForm.valid()){
+                    const request = $('#editForm').serialize();
+                    const alamat = $('#editForm').attr('action');
+                    $.ajax({
+                        url: alamat,
+                        method: 'POST',
+                        data: request,
+                        success:function(response){
+                            $("#table").DataTable().ajax.reload();
+                            $('#modal_form_vertical_edit').modal('hide');
+                            swalInit({
+                                type: 'success',
+                                title : response,
+                            });
+                        },
+                        error:function(xhr,status,error){
+                            swalInit({
+                                type: 'error',
+                                title : xhr.responseText,
+                            });
+                        }
+                    })
+                }
+            })
         });
 
+        Dropzone.options.dropzone = {   
+            url : '{{ url('importExcelKelas') }}',
+            params : {'sekolahId':'{{ $sekolah->sekolah_id }}' },
+            renameFile: function(file){
+                const date = new Date();
+                const time = date.getTime();
+                return time+file.name;
+            },
+            acceptedFiles: ".xls,.xlsx",
+            success : function(file,response){
+                $("#table").DataTable().ajax.reload();
+                $('#excelForm').toggle();
+                swalInit({
+                    type: 'success',
+                    title : response,
+                });
+            },
+            error: function(xhr){
+                swalInit({
+                    type: 'error',
+                    title : xhr.responseText,
+                });
+            }
+        }
+
         $(document).on('click','.edit',function(){
-            var id = $(this).data("id");
-            var url = '{{ route('kelas.update',':id') }}';
-            url = url.replace(':id',id);
+            const id = $(this).data("id");
+            let editUrl = '{{ route('kelas.edit',':id') }}';
+            editUrl = editUrl.replace(':id',id);
+            let updateUrl = '{{ route('kelas.update',':id') }}';
+            updateUrl = updateUrl.replace(':id',id);
             $.ajax({
-                url : "{{ url('kelasEditAjax') }}",
-                headers : "{{ csrf_token() }}",
+                url : editUrl,
+                headers : {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
                 method : 'get',
-                data: {id:id},
                 success : function(data){
-                    console.log(data);
                     $("#kelasNameEdit").val(data.kelas_name);
                     $("#sekolahId").val(data.sekolah_id);
-                    $("#editForm").attr('action',url);
+                    $("#editForm").attr('action',updateUrl);
                     $("#modal_form_vertical_edit").modal('show');
                 }
 
@@ -151,23 +279,40 @@
         });
 
         $(document).on('click','.delete',function(){
-            var id = $(this).data("id");
-            var alamat = '{{ route('kelas.destroy',':id') }}';
+            const id = $(this).data("id");
+            let alamat = '{{ route('kelas.destroy',':id') }}';
             alamat = alamat.replace(':id',id);
-            $.ajax({
-                url : alamat,
-                type: 'POST',
-                data: {
-                    id:id,
-                    _token:'{{ csrf_token() }}',
-                    _method: 'Delete'
-                },
-                success: function(){
-                    $("#table").DataTable().ajax.reload();
-                    Swal.fire({
-                        type: 'success',
-                        title : 'Data sekolah berhasil dihapus',
-                    });
+
+            swalInit({
+                title: 'Apakah anda yakin ingin menghapus data ini ?',
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!'
+            }).then(function(result){
+                if (result.value) {
+                    $.ajax({
+                        url : alamat,
+                        type: 'POST',
+                        headers:{
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        data: {
+                            _method: 'Delete'
+                        },
+                        success: function(response){
+                            $("#table").DataTable().ajax.reload();
+                            swalInit({
+                                type: 'success',
+                                title : response,
+                            });
+                        },
+                        error:function(xhr,status,error){
+                            swalInit({
+                                type: 'error',
+                                title : xhr.responseText,
+                            });
+                        }
+                    })
                 }
             })
         })

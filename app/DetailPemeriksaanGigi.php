@@ -27,21 +27,9 @@ class DetailPemeriksaanGigi extends Model
      * @var array
      */
     protected $fillable = [
+        'detail_pemeriksaan_gigi_id',
         'pemeriksaan_gigi_id',
-        'sekolah_id',
-        'kelas_id',
-        'siswa_id',
-        'jumlah_gigi_sulung',
-        'jumlah_def_t',
-        'def_d',
-        'def_f',
-        'def_e',
         'exo_pers',
-        'jumlah_gigi_permanen',
-        'jumlah_dmf_t',
-        'dmf_d',
-        'dmf_m',
-        'dmf_f',
         'fs',
         'debris_1',
         'debris_2',
@@ -63,18 +51,18 @@ class DetailPemeriksaanGigi extends Model
         'updated_at',
     ];
 
-    public function siswa()
+    public function pemeriksaan()
     {
-        return $this->hasOne('App\Siswa','siswa_id','siswa_id');
-    }
-
-    public function kelas()
-    {
-        return $this->hasOne('App\Kelas','kelas_id','kelas_id');
+        return $this->hasOne('App\Pemeriksaan','pemeriksaan_id','pemeriksaan_gigi_id');
     }
 
     public function indekKaries()
     {
-        return $this->hasOne('App\IndekKaries','detail_pemeriksaan_gigi_id','detail_pemeriksaan_gigi_id');
+        return $this->hasMany('App\IndekKaries','detail_pemeriksaan_gigi_id','detail_pemeriksaan_gigi_id');
+    }
+
+    public function scopeExclude($query,$value = array())
+    {
+        return $query->select(array_diff($this->fillable, (array) $value));
     }
 }

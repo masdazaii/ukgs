@@ -29,7 +29,6 @@
                             <th>NPSN</th>
                             <th>Nama Sekolah</th>
                             <th>Kota Administrasi</th>
-                            <th>Status</th>
                             <th width="25%">Action</th>
                         </tr>
                     </thead>
@@ -58,7 +57,7 @@
                 "destroy": true,
                 "processing": true,
                 "serverSide": true,
-                "ajax": {'url':"{{ url('/pemeriksaanGigiSekolahAjax') }}",
+                "ajax": {'url':"{{ url('pemeriksaan/1/pemeriksaanSekolahAjax') }}",
                         'headers':"{{ csrf_token() }}"},
                 "order": ['0', 'desc'],
                 "dataSrc": "data",
@@ -66,21 +65,10 @@
                     {data: 'npsn',name:'npsn'},
                     {data: 'sekolah_name', name: 'sekolah_name'},
                     {data: 'kota_administrasi', name: 'kota_administrasi'},
-                    {data: 'status', name:'status'},
                     {data: 'action', name: 'action', "orderable": false, "searchable": false}
                 ],
                 "fixedColumns": true,
             });
         });
-
-        $(document).on('click','.pilih',function(){
-            event.preventDefault();
-            var id = $(this).data('id');
-            $("#sekolahId").val(id);
-            var url = '{{ route('pemeriksaanGigi.store') }}';
-            console.log(url);
-            $('#post-form').attr('action',url);
-            $('#post-form').submit();
-        })
 	</script>
 @endsection

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Sekolah;
 use App\Kelas;
+use App\Kelurahan;
+use App\KelurahanMapping;
 use App\Imports\SekolahImport;
 use Alert;
 use DB;
@@ -27,7 +29,8 @@ class SekolahController extends Controller
      */
     public function index()
     {
-        return view('sekolah.index');
+        $kelurahan = Kelurahan::all();
+        return view('sekolah.index',compact('kelurahan'));
     }
 
     public function sekolahAjax()
@@ -38,22 +41,12 @@ class SekolahController extends Controller
             ->addColumn('action',function($data){
                 $button = '';
                 $button .= ' <a href="' .URL::to('/sekolah/' . $data->sekolah_id . '/kelas'). '" class="btn btn-sm btn-success">Kelas</a>
-                            <a href="' .URL::to('/sekolah/' . $data->sekolah_id . '/edit'). '" class="btn btn-sm btn-warning"><i class="fa fa-edit mr-1"></i> Edit</a>
-                            <button data-id="'.$data->sekolah_id.'" class="btn btn-danger btn-sm delete" ><i class="fas fa-trash mr-1 fa-1"></i> Delete</button>';
+                            <a href="#" class="btn btn-sm btn-warning edit" data-id="'.$data->sekolah_id.'"><i class="fa fa-edit mr-1"></i> Edit</a>
+                            <button data-id="'.$data->sekolah_id.'" class="btn btn-danger btn-sm delete" ><i class="fas fa-trash mr-1"></i> Delete</button>';
                 return $button;
             })
             ->removeColumn('created_at','updated_at')
             ->make(true);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return view('sekolah.create');
     }
 
     /**
@@ -64,38 +57,39 @@ class SekolahController extends Controller
      */
     public function store(Request $request)
     {
-        // return $request->all();
-
         $this->validate($request,[
-            'npsn' => 'required|int',
+            'npsn' => 'required|int|digits:8',
             'sekolahType' => 'required',
             'sekolahName' => 'required|string',
             'alamat' => 'required|string',
+            'kelurahan' => 'required',
             'kecamatan' => 'required|string',
             'kotaAdministrasi' => 'required|string'
         ]);
 
-        $sekolah = new Sekolah;
-        $sekolah->npsn = $request->npsn;
-        $sekolah->sekolah_name = $request->sekolahName;
-        $sekolah->sekolah_type = $request->sekolahType;
-        $sekolah->alamat = $request->alamat;
-        $sekolah->kecamatan = $request->kecamatan;
-        $sekolah->kota_administrasi = $request->kotaAdministrasi;
-        $sekolah->save();
+        DB::beginTransaction();
+        try {
+            $sekolah = new Sekolah;
+            $sekolah->npsn = $request->npsn;
+            $sekolah->sekolah_name = $request->sekolahName;
+            $sekolah->sekolah_type = $request->sekolahType;
+            $sekolah->alamat = $request->alamat;
+            $sekolah->kelurahan = $request->kelurahan;
+            $sekolah->kecamatan = $request->kecamatan;
+            $sekolah->kota_administrasi = $request->kotaAdministrasi;
+            $sekolah->save();
 
-        return redirect()->route('sekolah.index')->with('success','Data sekolah berhasil ditambahkan'); 
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
+            $sekolahId = $sekolah->sekolah_id;
+            $kelurahanMapping = new KelurahanMapping;
+            $kelurahanMapping->kelurahan_id = $request->kelurahan;
+            $kelurahanMapping->sekolah_id = $sekolahId;
+            $kelurahanMapping->save();
+            DB::commit();
+            return Response::json('Data sekolah berhasil ditambahkan',200);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
+        }
     }
 
     /**
@@ -106,13 +100,8 @@ class SekolahController extends Controller
      */
     public function edit($id)
     {
-        $tipeSekolah = [
-            '0' => 'SD',
-            '1' => 'SMP',
-            '2' => 'SMA'
-        ];
-        $sekolah = Sekolah::findOrFail($id);
-        return view('sekolah.edit',compact('sekolah','tipeSekolah'));
+        $sekolah = Sekolah::with('kelurahan')->findOrFail($id);
+        return $sekolah;
     }
 
     /**
@@ -127,24 +116,37 @@ class SekolahController extends Controller
         // return $request->all();
 
         $this->validate($request,[
-            'npsn' => 'required|int',
-            'sekolahType' => 'required',
-            'sekolahName' => 'required|string',
-            'alamat' => 'required|string',
-            'kecamatan' => 'required|string',
-            'kotaAdministrasi' => 'required|string'
+            'npsnEdit' => 'required|int',
+            'sekolahTypeEdit' => 'required',
+            'sekolahNameEdit' => 'required|string',
+            'kelurahanEdit' => 'required',
+            'alamatEdit' => 'required|string',
+            'kecamatanEdit' => 'required|string',
+            'kotaAdministrasiEdit' => 'required|string'
         ]);
 
-        $sekolah = Sekolah::findOrFail($id);
-        $sekolah->npsn = $request->npsn;
-        $sekolah->sekolah_name = $request->sekolahName;
-        $sekolah->sekolah_type = $request->sekolahType;
-        $sekolah->alamat = $request->alamat;
-        $sekolah->kecamatan = $request->kecamatan;
-        $sekolah->kota_administrasi = $request->kotaAdministrasi;
-        $sekolah->save();
+        DB::beginTransaction();
+        try {
+            $sekolah = Sekolah::findOrFail($id);
+            $sekolah->npsn = $request->npsnEdit;
+            $sekolah->sekolah_name = $request->sekolahNameEdit;
+            $sekolah->sekolah_type = $request->sekolahTypeEdit;
+            $sekolah->alamat = $request->alamatEdit;
+            $sekolah->kelurahan = $request->kelurahanEdit;
+            $sekolah->kecamatan = $request->kecamatanEdit;
+            $sekolah->kota_administrasi = $request->kotaAdministrasiEdit;
+            $sekolah->save();
 
-        return redirect()->route('sekolah.index')->with('success','Data sekolah berhasil diubah'); 
+            $kelurahanMapping = KelurahanMapping::where('sekolah_id',$id)->first();
+            $kelurahanMapping->kelurahan_id = $request->kelurahanEdit;
+            $kelurahanMapping->save();
+            DB::commit();
+
+            return Response::json('Data sekolah berhasil ditambahkan',200);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
+        }
     }
 
     /**
@@ -155,10 +157,17 @@ class SekolahController extends Controller
      */
     public function destroy($id)
     {
-        $sekolah = Sekolah::findOrFail($id);
-        $sekolah->delete();
+        DB::beginTransaction();
+        try {
+            $sekolah = Sekolah::findOrFail($id);
+            $sekolah->delete();
+            DB::commit();
 
-        return redirect()->route('sekolah.index')->with('success','Data sekolah berhasil dihapus'); 
+            return Response::json('Data Sekolah berhasil dihapus',200);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
+        }
     }
 
     public function kelas($sekolahId)

@@ -4,7 +4,6 @@
 <script src="{{ asset('limitless/global_assets/js/plugins/ui/ripple.min.js') }}"></script>
 <!-- /core JS files -->
 
-
 <script src="{{ asset('limitless/layout_1/assets/js/app.js') }}"></script>
 <!-- /theme JS files -->
 

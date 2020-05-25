@@ -7,22 +7,15 @@ use App\Kelas;
 use DB;
 use session;
 use URL;
+use Excel;
+use App\Imports\KelasImport;
+use Response;
 
 class KelasController extends Controller
 {
     public function __construct()
     {
         $this->middleware('auth');
-    }
-    
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
     }
 
     public function kelasAjax($id)
@@ -47,14 +40,24 @@ class KelasController extends Controller
             ->make(true);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+
+    public function importExcelKelas(Request $request)
     {
-        //
+        $this->validate($request,[
+            'file' => 'required|file|mimes:xls,xlsx'
+        ]);
+        
+        try {
+            $sekolahId = $request->sekolahId;
+            $file = $request->File('file');
+            $fileName = rand().$file->getClientOriginalName();
+            $file->move('upload/excel',$fileName);
+
+            Excel::import(new KelasImport($sekolahId), public_path('upload/excel/'.$fileName));
+            return Response::json('Data dalam excel berhasil ditambahkan',200);
+        } catch (\Exception $e) {
+            return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
+        }
     }
 
     /**
@@ -66,30 +69,26 @@ class KelasController extends Controller
 
     public function store(Request $request)
     {
-
         $this->validate($request,[
             'sekolahId' => 'required',
             'kelasName' => 'required|string'
         ]);
 
-        $kelas = new Kelas;
-        $kelas->sekolah_id = $request->sekolahId;
-        $kelas->kelas_name = $request->kelasName;
-        $kelas->save();
+        DB::beginTransaction();
+        try {
+            $kelas = new Kelas;
+            $kelas->sekolah_id = $request->sekolahId;
+            $kelas->kelas_name = $request->kelasName;
+            $kelas->save();
+            DB::commit();
 
-        return redirect()->back()->with('success','kelas berhasil ditambahkan');
+            return Response::json('Kelas berhasil ditambahkan',200);
+        } catch (Exception $e) {
+            DB::rollback();
+            return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
 
     /**
      * Show the form for editing the specified resource.
@@ -99,8 +98,9 @@ class KelasController extends Controller
      */
     public function edit($id)
     {
-        $kelas = Kelas::where('kelas_id',$id)->first();
-        return view('kelas.edit',compact('kelas'));
+        $kelas = Kelas::where('kelas_id',$id)->select('kelas_name','kelas_id')
+                ->first();
+        return $kelas;
     }
 
     /**
@@ -112,11 +112,22 @@ class KelasController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $kelas = Kelas::findOrFail($id);
-        $kelas->kelas_name = $request->kelasName;
-        $kelas->save();
+        $this->validate($request,[
+            'kelasName' => 'required|string'
+        ]);
 
-        return redirect()->back()->with('success','kelas berhasil diupdate');
+        DB::beginTransaction();
+        try {
+            $kelas = Kelas::findOrFail($id);
+            $kelas->kelas_name = $request->kelasName;
+            $kelas->save();
+            DB::commit();
+
+            return Response::json('Data kelas berhasil diubah',200);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
+        }
     }
 
     /**
@@ -127,16 +138,16 @@ class KelasController extends Controller
      */
     public function destroy($id)
     {
-        $kelas = Kelas::findOrFail($id);
-        $kelas->delete();
+        DB::beginTransaction();
+        try {
+            $kelas = Kelas::findOrFail($id);
+            $kelas->delete();
+            DB::commit();
 
-        return redirect()->back()->with('success','kelas berhasil dihapus');   
-    }
-
-    public function kelasEditAjax(Request $request)
-    {
-        $id = $request->id;
-        $kelas = Kelas::where('kelas_id',$id)->first();
-        return $kelas;
+            return Response::json('Data kelas berhasil dihapus',200);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
+        }
     }
 }

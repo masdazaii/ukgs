@@ -3,9 +3,11 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Kelurahan extends Model
 {
+    use SoftDeletes;
     /**
      * The table associated with the model.
      *
@@ -13,6 +15,7 @@ class Kelurahan extends Model
      */
     protected $table = 'Kelurahan';
 
+    protected $dates = ['deleted_at'];
 
     /**
      * Table primary key to define table id

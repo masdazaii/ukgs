@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Auth;
 
+use Session;
+use Request;
 use App\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
@@ -30,6 +32,11 @@ class RegisterController extends Controller
      */
     protected $redirectTo = '/';
 
+    protected function redirectTo()
+    {
+        return '/login';
+    }
+
     /**
      * Create a new controller instance.
      *
@@ -52,6 +59,9 @@ class RegisterController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:6', 'confirmed'],
+            'noHp' => 'required',
+            'username' => 'required',
+            'alamat' => 'required',
         ]);
     }
 
@@ -67,6 +77,10 @@ class RegisterController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+            'no_hp' => $data['noHp'],
+            'alamat' => $data['alamat'],
+            'username' => $data['username'],
+            'status' => 0
         ]);
     }
 }

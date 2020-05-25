@@ -3,15 +3,19 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Siswa extends Model
 {
+    use SoftDeletes;
      /**
      * The table associated with the model.
      *
      * @var string
      */
     protected $table = 'siswa';
+
+    protected $dates = ['deleted_at'];
 
 
     /**
@@ -28,7 +32,6 @@ class Siswa extends Model
      */
     protected $fillable = [
         'siswa_id',
-        'sekolah_id',
         'kelas_id',
         'nama',
         'nis',
@@ -39,6 +42,7 @@ class Siswa extends Model
         'agama',
         'nama_orang_tua',
         'alamat',
+        'usia', 
         'created_at',
         'updated_at',
     ];
@@ -46,5 +50,15 @@ class Siswa extends Model
     public function kelas()
     {
         return $this->hasOne('App\Kelas','kelas_id','kelas_id');
+    }
+
+    public function kelasMapping()
+    {
+        return $this->hasMany('App\KelasMapping','siswa_id','siswa_id');
+    }
+
+    public function pemeriksaan()
+    {
+        return $this->hasMany('App\Pemeriksaan','siswa_id','siswa_id');
     }
 }

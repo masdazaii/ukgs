@@ -28,7 +28,7 @@ class KelurahanController extends Controller
 
     public function kelurahanAjax()
     {
-        $data = Kelurahan::all();
+        $data = Kelurahan::select('kelurahan_id','kelurahan_name');
 
         return datatables()->of($data)
         ->addColumn('action',function($data){
@@ -37,7 +37,6 @@ class KelurahanController extends Controller
                                 <button type="submit" data-id="'.$data->kelurahan_id.'" class="btn btn-danger btn-sm delete" ><i class="fas fa-trash mr-1 fa-1"></i>Delete</button>';
                 return $button;
             })
-            ->removeColumn('created_at','updated_at')
             ->make(true);
     }
 
@@ -59,11 +58,21 @@ class KelurahanController extends Controller
      */
     public function store(Request $request)
     {
-        $kelurahan = new Kelurahan;
-        $kelurahan->kelurahan_name = $request->kelurahanName;
-        $kelurahan->save();
+        $this->validate($request,[
+            'kelurahanName' => 'required'
+        ]);
 
-        return response()->json('success');
+        DB::beginTransaction();
+        try {
+            $kelurahan = new Kelurahan;
+            $kelurahan->kelurahan_name = $request->kelurahanName;
+            $kelurahan->save();
+            DB::commit();
+            return Response::json('Data kelurahan berhasil ditambahkan',200);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);   
+        }
     }
 
     /**
@@ -76,17 +85,6 @@ class KelurahanController extends Controller
     {
         $kelurahan = Kelurahan::findOrFail($id);
         return $kelurahan;
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
     }
 
     public function kelurahanEditAjax(Request $request)
@@ -105,12 +103,22 @@ class KelurahanController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // return $request->all();
-        $kelurahan = Kelurahan::findOrFail($id);
-        $kelurahan->kelurahan_name = $request->kelurahanName;
-        $kelurahan->save();
+        $this->validate($request,[
+            'kelurahanName' => 'required'
+        ]);
 
-        return Response::json('success');
+        DB::beginTransaction();
+        try {
+            $kelurahan = Kelurahan::findOrFail($id);
+            $kelurahan->kelurahan_name = $request->kelurahanName;
+            $kelurahan->save();
+            DB::commit();
+
+            return Response::json('Data kelurahan berhasil diubah',200);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
+        }
     }
 
     /**
@@ -121,8 +129,16 @@ class KelurahanController extends Controller
      */
     public function destroy($id)
     {
-        $kelurahan = Kelurahan::findOrFail($id);
-        $kelurahan->delete();
-        return Response::json('success');
+        DB::beginTransaction();
+        try {
+            $kelurahan = Kelurahan::findOrFail($id);
+            $kelurahan->delete();
+            DB::commit();
+            
+            return Response::json('Data kelurahan berhasil dihapus',200);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
+        }
     }
 }

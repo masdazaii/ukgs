@@ -30,7 +30,6 @@
                 <table class="table table-striped" id="table">
                     <thead>
                         <tr>
-                            <th>id</th>
                             <th>Kelurahan</th>
                             <th width="25%">Action</th>
                         </tr>
@@ -105,6 +104,12 @@
 @endsection
 @section('script')
 	<script>
+        const swalInit = swal.mixin({
+            buttonsStyling: false,
+            confirmButtonClass: 'btn btn-primary',
+            cancelButtonClass: 'btn btn-light'
+        });
+
 		$(document).ready(function() {
             $("#table").DataTable({
                 "destroy": true,
@@ -115,7 +120,6 @@
                 "order": ['0', 'desc'],
                 "dataSrc": "data",
                 "columns": [
-                    {data: 'kelurahan_id',name:'kelurahan_id'},
                     {data: 'kelurahan_name', name: 'kelurahan_name'},
                     {data: 'action', name: 'action', "orderable": false, "searchable": false}
                 ],
@@ -124,7 +128,7 @@
         });
 
         $(document).on('click','.submit',function(){
-            var kelurahanName = $('#kelurahanName').val();
+            const kelurahanName = $('#kelurahanName').val();
             $.ajax({
                 url : '{{ route('kelurahan.store') }}',
                 method : 'POST',
@@ -132,20 +136,26 @@
                     kelurahanName:kelurahanName,
                     _token: '{{ csrf_token() }}'
                 },
-                success:function(){
+                success:function(response){
                     $('#modal_form_vertical').modal('hide');
                     $("#table").DataTable().ajax.reload();
-                    Swal.fire({
+                    swalInit({
                         type: 'success',
-                        title : 'Data kelurahan berhasil dihapus',
+                        title : response,
+                    });
+                },
+                error: function(xhr){
+                    swalInit({
+                        type: 'error',
+                        title : xhr.responseText,
                     });
                 }
             })
         })
 
         $(document).on('click','.edit',function(){
-            var id = $(this).data("id");
-            var alamat = '{{ route('kelurahan.update',':id') }}';
+            const id = $(this).data("id");
+            let alamat = '{{ route('kelurahan.update',':id') }}';
             alamat = alamat.replace(':id',id);
             $.ajax({
                 url : '{{ url('kelurahanEditAjax') }}',
@@ -162,9 +172,8 @@
         });
 
         $(document).on('click','.editSubmit',function(){
-            var kelurahanNameEdit = $('#kelurahanNameEdit').val();
-            console.log(kelurahanNameEdit);
-            var alamat = $('#editForm').attr('action');
+            const kelurahanNameEdit = $('#kelurahanNameEdit').val();
+            const alamat = $('#editForm').attr('action');
             $.ajax({
                 url : alamat,
                 type: 'POST',
@@ -173,35 +182,56 @@
                     _token: '{{ csrf_token() }}',
                     _method: 'PUT'
                 },
-                success:function(){
+                success:function(response){
                     $('#modal_form_vertical_edit').modal('hide');
                     $("#table").DataTable().ajax.reload();
-                    Swal.fire({
+                    swalInit({
                         type: 'success',
-                        title : 'Data kelurahan berhasil diupdate',
+                        title : response,
+                    });
+                },
+                error: function(xhr){
+                    swalInit({
+                        type: 'error',
+                        title : xhr.responseText,
                     });
                 }
             })
         })
 
         $(document).on('click','.delete',function(){
-            var id = $(this).data("id");
-            var alamat = '{{ route('kelurahan.destroy',':id') }}';
+            const id = $(this).data("id");
+            let alamat = '{{ route('kelurahan.destroy',':id') }}';
             alamat = alamat.replace(':id',id);
-            $.ajax({
-                url : alamat,
-                type: 'POST',
-                data: {
-                    id:id,
-                    _token:'{{ csrf_token() }}',
-                    _method: 'Delete'
-                },
-                success: function(){
-                    $("#table").DataTable().ajax.reload();
-                    Swal.fire({
-                        type: 'success',
-                        title : 'Data kelurahan berhasil dihapus',
-                    });
+
+            swalInit({
+                title: 'Apakah anda yakin ingin menghapus data ini ?',
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!'
+            }).then(function(result){
+                if (result.value) {
+                    $.ajax({
+                        url : alamat,
+                        type: 'POST',
+                        data: {
+                            _token:'{{ csrf_token() }}',
+                            _method: 'Delete'
+                        },
+                        success: function(response){
+                            $("#table").DataTable().ajax.reload();
+                            swalInit({
+                                type: 'success',
+                                title : response,
+                            });
+                        },
+                        error: function(xhr){
+                            swalInit({
+                                type: 'error',
+                                title : xhr.responseText,
+                            });
+                        }
+                    })
                 }
             })
         })

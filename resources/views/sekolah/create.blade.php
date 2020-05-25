@@ -57,6 +57,15 @@
 					</div>
 				</div>
 				<div class="form-group">
+					<label>Kelurahan :</label>
+					<select class="form-control" name="kelurahan">
+						<option>Pilih Kelurahan</option>
+						@for($i = 0;$i < count($kelurahan);$i++)
+							<option value="{{ $kelurahan[$i]->kelurahan_id }}">{{ $kelurahan[$i]->kelurahan_name }}</option>
+						@endfor
+					</select>
+				</div>
+				<div class="form-group">
 					<label>Alamat :</label>
 					<input type="text" class="form-control" placeholder="Silahkan masukan alamat sekolah" name="alamat">
 				</div>

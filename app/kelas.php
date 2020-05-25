@@ -3,9 +3,12 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class kelas extends Model
+class Kelas extends Model
 {
+    use SoftDeletes;
+
     /**
      * The table associated with the model.
      *
@@ -13,6 +16,7 @@ class kelas extends Model
      */
     protected $table = 'kelas';
 
+    protected $dates = ['deleted_at'];
 
     /**
      * Table primary key to define table id
@@ -37,5 +41,10 @@ class kelas extends Model
     public function sekolah()
     {
         return $this->hasOne('App\Sekolah','sekolah_id','sekolah_id');
+    }
+
+    public function kelasMapping()
+    {
+        return $this->hasMany('App\KelasMapping','kelas_id','kelas_id');
     }
 }
