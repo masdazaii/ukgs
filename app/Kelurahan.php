@@ -13,7 +13,7 @@ class Kelurahan extends Model
      *
      * @var string
      */
-    protected $table = 'Kelurahan';
+    protected $table = 'kelurahan';
 
     protected $dates = ['deleted_at'];
 
