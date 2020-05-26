@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use PDF;
 use Excel;
 use Carbon\Carbon;
-use App\Helpers\FunctionHelper;
+use App\helpers\FunctionHelper;
 use App\Exports\PemeriksaanExportPerSheet;
 use App\User;
 use App\Sekolah;
