@@ -3,9 +3,11 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DetailPemeriksaanSosial extends Model
 {
+    use SoftDeletes;
 	/**
      * The table associated with the model.
      *
@@ -13,7 +15,7 @@ class DetailPemeriksaanSosial extends Model
      */
     protected $table = 'detail_pemeriksaan_sosial';
 
-
+    protected $dates = ['deleted_at'];
     /**
      * Table primary key to define table id
      *

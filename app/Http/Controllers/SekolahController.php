@@ -188,6 +188,6 @@ class SekolahController extends Controller
             Excel::import(new SekolahImport,$file);
             return Response::json('success',200);
         }
-        return Response::json('error',400);
+        return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
     }
 }

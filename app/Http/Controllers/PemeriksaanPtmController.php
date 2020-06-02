@@ -141,8 +141,7 @@ class PemeriksaanPtmController extends Controller
      */
     public function update(Request $request, $id)
     {
-
-        // return $request->all();
+        
         $this->validate($request,[
             'sistolik' => 'required',
             'diastolik' =>'required',
@@ -161,36 +160,35 @@ class PemeriksaanPtmController extends Controller
             $detailPemeriksaanPtm->save();
 
             $pemeriksaanPtm = Pemeriksaan::findOrFail($id);
-            $pemeriksaanPtm->rujukan = $request->rujukanEdit;
-            $pemeriksaanPtm->save();
-
-            if ($request->rujukanEdit == 1) {
-                if ($pemeriksaanPtm->rujukan == 0) {
-                    $rujukan = new DetailRujukan;
-                    $rujukan->pemeriksaan_id = $id;
-                    if (isset($request->deskripsi)) {
-                        $rujukan->deskripsi = $request->deskripsi;
-                    }
-                    $rujukan->save();
-                }else{
-                    $rujukan = DetailRujukan::where('pemeriksaan_id',$id)->first();
-                    if (isset($request->deskripsi)) {
-                        $rujukan->deskripsi = $request->deskripsi;
-                    }else{
-                        $rujukan->deskripsi = '-';
-                    }
-                    $rujukan->save(); 
+            if ($pemeriksaanPtm->rujukan == 0 && $request->rujukan == 1) {
+                $detailRujukan = new DetailRujukan;
+                $detailRujukan->pemeriksaan_id = $id;
+                if (isset($request->deskripsi)) {
+                    $detailRujukan->deskripsi = $request->deskripsi;
                 }
-            }else{
-                if ($pemeriksaanPtm->rujukan == 1) {
-                    $rujukan = DetailRujukan::where('pemeriksaan_id',$id)->first();
-                    $rujukan->delete();
+                $detailRujukan->save();
+
+                $pemeriksaanPtm->rujukan = $request->rujukan;
+                $pemeriksaanPtm->save();
+            }else if($pemeriksaanPtm->rujukan == 1){
+                if ($request->rujukan == 1) {
+                    $detailRujukan = DetailRujukan::where('pemeriksaan_id',$id)->first();
+                    if (isset($request->deskripsi)) {
+                        $detailRujukan->deskripsi = $request->deskripsi;
+                    }
+                    $detailRujukan->save();
+                }else{
+                    $detailRujukan = DetailRujukan::where('pemeriksaan_id',$id)->first();
+                    $detailRujukan->delete();
+
+                    $pemeriksaanPtm->rujukan = $request->rujukan;
+                    $pemeriksaanPtm->save();
                 }
             }
             DB::commit();
 
             return Response::json('Data pemeriksaan penyakit tidak menular berhasil diubah',200);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             DB::rollback();
             return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
         }
@@ -211,7 +209,7 @@ class PemeriksaanPtmController extends Controller
             DB::commit();
 
             return Response::json('Data pemeriksaan penyakit tidak menular berhasi dihapus',200);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             DB::rollback();
             return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
         }

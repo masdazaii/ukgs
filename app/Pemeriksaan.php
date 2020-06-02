@@ -4,11 +4,12 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Askedio\SoftCascade\Traits\SoftCascadeTrait;
 
 class Pemeriksaan extends Model
 {
 
-    use SoftDeletes;
+    use SoftDeletes,SoftCascadeTrait;
     /**
      * The table associated with the model.
      *
@@ -17,6 +18,15 @@ class Pemeriksaan extends Model
     protected $table = 'pemeriksaan';
 
     protected $dates = ['deleted_at'];
+
+    protected $softCascade = [
+        'detailPemeriksaanGigi',
+        'detailPemeriksaanImt',
+        'detailPemeriksaanSosial',
+        'detailPemeriksaanPtm',
+        'detailPemeriksaanBw',
+        'detailRujukan'
+    ];
 
 
     /**

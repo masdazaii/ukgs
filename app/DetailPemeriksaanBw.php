@@ -3,9 +3,12 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Askedio\SoftCascade\Traits\SoftCascadeTrait;
 
 class DetailPemeriksaanBw extends Model
 {
+    use SoftDeletes;
 	/**
      * The table associated with the model.
      *
@@ -13,7 +16,7 @@ class DetailPemeriksaanBw extends Model
      */
     protected $table = 'detail_pemeriksaan_bw';
 
-
+    protected $dates = ['deleted_at'];
     /**
      * Table primary key to define table id
      *

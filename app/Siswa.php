@@ -4,10 +4,11 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
+use Askedio\SoftCascade\Traits\SoftCascadeTrait;
 class Siswa extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes,SoftCascadeTrait;
+    
      /**
      * The table associated with the model.
      *
@@ -16,6 +17,8 @@ class Siswa extends Model
     protected $table = 'siswa';
 
     protected $dates = ['deleted_at'];
+
+    protected $softCascade = ['pemeriksaan','kelasMapping'];
 
 
     /**
@@ -46,11 +49,6 @@ class Siswa extends Model
         'created_at',
         'updated_at',
     ];
-
-    public function kelas()
-    {
-        return $this->hasOne('App\Kelas','kelas_id','kelas_id');
-    }
 
     public function kelasMapping()
     {

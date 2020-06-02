@@ -64,15 +64,21 @@ class UserController extends Controller
     {
         $id = $request->id;
         $user = User::where('id',$id)->first();
-        // return $user;
-        if ($user->status == 1) {
-            $user->status = false;
-            $user->save();
-            return Response::json("User telah dinonaktifkan",200);
-        }else{
-            $user->status = true;
-            $user->save();
-            return Response::json("User telah diaktifkan",200);
+
+        DB::beginTransaction();
+        try {
+            if ($user->status == 1) {
+                $user->status = false;
+                $user->save();
+                return Response::json("User telah dinonaktifkan",200);
+            }else{
+                $user->status = true;
+                $user->save();
+                return Response::json("User telah diaktifkan",200);
+            }
+        } catch (\Exception $e) {
+            DB::rollback();
+            return Response::json("terdapat kesalahan, silahkan ubungi pengembang", 500);
         }
     }
 
