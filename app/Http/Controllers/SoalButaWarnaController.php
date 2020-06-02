@@ -7,6 +7,7 @@ use App\SoalButaWarna;
 use Response;
 use Session;
 use URL;
+use DB;
 use File;
 
 class SoalButaWarnaController extends Controller
@@ -52,20 +53,32 @@ class SoalButaWarnaController extends Controller
      */
     public function store(Request $request)
     {
-        // return $request->all();
+        $this->validate($request,[
+            'deskripsi' => 'required',
+            'jawabanBenar' =>'required',
+            'file' =>'required|mimes: jpg,jpeg,png'
+        ]);
 
-        $soalButaWarna = new SoalButaWarna;
-        $soalButaWarna->deskripsi = $request->deskripsi;
-        $soalButaWarna->jawaban_benar = $request->jawabanBenar;
+        DB::beginTransaction();
+        try {
+            $soalButaWarna = new SoalButaWarna;
+            $soalButaWarna->deskripsi = $request->deskripsi;
+            $soalButaWarna->jawaban_benar = $request->jawabanBenar;
+            
+            $file = $request->file('file');
+            $fileName = time().'_' .uniqid().'.'. $file->getClientOriginalExtension();
+            $imagePath = public_path().'/upload/image/';
+            $file->move($imagePath,$fileName);
+            $soalButaWarna->image = 'upload/image/'.$fileName;
+            $soalButaWarna->save();
+            DB::commit();
+
+            return Response::json('Soal buta warna berhasil ditambahkan',200);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
+        }
         
-        $file = $request->file('file');
-        $fileName = time().'_' .uniqid().'.'. $file->getClientOriginalExtension();
-        $imagePath = public_path().'/upload/image/';
-        $file->move($imagePath,$fileName);
-        $soalButaWarna->image = 'upload/image/'.$fileName;
-        $soalButaWarna->save();
-
-        return Response::json('success',200);
     }
 
     /**
@@ -89,27 +102,38 @@ class SoalButaWarnaController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // return $request->all();
-        $soalButaWarna = SoalButaWarna::findOrFail($id);
-        $soalButaWarna->deskripsi = $request->deskripsi;
-        $soalButaWarna->jawaban_benar = $request->jawabanBenar;
+        $this->validate($request,[
+            'deskripsi' => 'required',
+            'jawabanBenar' =>'required',
+        ]);
 
-        if($request->hasFile('file')){
-            $path = $soalButaWarna->image;
-            if(File::exists($path)){
-                File::delete($path);
+        DB::beginTransaction();
+        try {
+            $soalButaWarna = SoalButaWarna::findOrFail($id);
+            $soalButaWarna->deskripsi = $request->deskripsi;
+            $soalButaWarna->jawaban_benar = $request->jawabanBenar;
+
+            if($request->hasFile('file')){
+                $path = $soalButaWarna->image;
+                if(File::exists($path)){
+                    File::delete($path);
+                }
+
+                $file = $request->file('file');
+                $fileName = time().'_' .uniqid().'.'. $file->getClientOriginalExtension();
+                $imagePath = public_path().'/upload/image/';
+                $file->move($imagePath,$fileName);
+                $soalButaWarna->image = 'upload/image/'.$fileName;
             }
+            
+            $soalButaWarna->save();
+            DB::commit();
 
-            $file = $request->file('file');
-            $fileName = time().'_' .uniqid().'.'. $file->getClientOriginalExtension();
-            $imagePath = public_path().'/upload/image/';
-            $file->move($imagePath,$fileName);
-            $soalButaWarna->image = 'upload/image/'.$fileName;
+            return Response::json('Soal buta warna berhasil diubah',200);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
         }
-        
-        $soalButaWarna->save();
-
-        return Response::json('success',200);
     }
 
     /**
@@ -120,9 +144,16 @@ class SoalButaWarnaController extends Controller
      */
     public function destroy($id)
     {
-        $soalButaWarna = SoalButaWarna::findOrFail($id);
-        $soalButaWarna->delete();
+        DB::beginTransaction();
+        try {
+            $soalButaWarna = SoalButaWarna::findOrFail($id);
+            $soalButaWarna->delete();
+            DB::commit();
 
-        return Response::json('success',200);
+            return Response::json('Soal buta warna berhasil dihapus',200);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
+        }
     }
 }

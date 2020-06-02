@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use PDF;
 use Excel;
 use Carbon\Carbon;
-use App\helpers\FunctionHelper;
+use App\Helpers\FunctionHelper;
 use App\Exports\PemeriksaanExportPerSheet;
 use App\User;
 use App\Sekolah;
@@ -31,7 +31,8 @@ class DashboardController extends Controller
     {
     	$top = [
     		'sekolah' => Sekolah::count(),
-	    	'siswa' => Siswa::count(),
+	    	'siswa' => Siswa::whereHas('kelasMapping')
+	    				->count(),
 	    	'kelurahan' => Kelurahan::count(),
 	    	'pemeriksa' => User::count(),
     	];

@@ -83,7 +83,7 @@ class KelasController extends Controller
             DB::commit();
 
             return Response::json('Kelas berhasil ditambahkan',200);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             DB::rollback();
             return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
         }

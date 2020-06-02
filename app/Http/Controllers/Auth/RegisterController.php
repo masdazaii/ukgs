@@ -80,7 +80,7 @@ class RegisterController extends Controller
             'no_hp' => $data['noHp'],
             'alamat' => $data['alamat'],
             'username' => $data['username'],
-            'status' => 1
+            'status' => 0
         ]);
     }
 }

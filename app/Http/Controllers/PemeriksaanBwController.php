@@ -171,7 +171,7 @@ class PemeriksaanBwController extends Controller
             }
 
             $pemeriksaan = Pemeriksaan::findOrFail($id);
-            if ($temp == 3) {
+            if ($temp >= 3) {
                 $pemeriksaan->rujukan = 1;
             }else{
                 $pemeriksaan->rujukan = 0;

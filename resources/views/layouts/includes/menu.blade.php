@@ -102,6 +102,12 @@
           </ul>
         </li>
         <li class="nav-item">
+          <a href="{{ URL::to('/riwayatPemeriksaan') }}" class="nav-link"><i class="icon-hour-glass2"></i> <span>Riwayat Pemeriksaan</span></a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ URL::to('/laporan') }}" class="nav-link"><i class="icon-file-text2"></i> <span>Cek Laporan</span></a>
+        </li>
+        <li class="nav-item">
           <a href="{{ URL::to('/rujukan') }}" class="nav-link"><i class="icon-googleplus5"></i> <span>Rujukan</span></a>
         </li>
         <li class="nav-item">

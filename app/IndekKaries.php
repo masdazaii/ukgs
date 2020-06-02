@@ -3,10 +3,11 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-use Schema;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class IndekKaries extends Model
 {
+    use SoftDeletes;
     /**
      * The table associated with the model.
      *

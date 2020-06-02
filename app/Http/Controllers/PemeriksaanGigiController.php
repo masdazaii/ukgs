@@ -11,7 +11,7 @@ use App\DetailPemeriksaanGigi;
 use App\indekKaries;
 use App\KelasMapping;
 use App\DetailRujukan;
-use App\helpers\FunctionHelper;
+use App\Helpers\FunctionHelper;
 use DB;
 use URL;
 use session;
@@ -83,27 +83,6 @@ class PemeriksaanGigiController extends Controller
             })
             ->rawColumns(['rujukan','action'])
             ->make(true);
-    }
-
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        // $id = $request->sekolahId;
-        // $cek = PemeriksaanGigi::where('sekolah_id',$id)->first();
-        
-        // if (isset($cek) == false) {
-        //     $pemeriksaanGigi = new PemeriksaanGigi;
-        //     $pemeriksaanGigi->sekolah_id = $id;
-        //     $pemeriksaanGigi->save();
-        // }
-
-        // return redirect()->route('periksaGigi',$id);
     }
 
     /**
@@ -210,8 +189,6 @@ class PemeriksaanGigiController extends Controller
      */
     public function update(Request $request, $id)
     {
-
-        // return $request->all();
         $this->validate($request,[
             'fs' => 'required',
             'exoPers' => 'required',

@@ -3,15 +3,22 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Askedio\SoftCascade\Traits\SoftCascadeTrait;
 
 class DetailPemeriksaanGigi extends Model
 {
+    use SoftDeletes,SoftCascadeTrait;
      /**
      * The table associated with the model.
      *
      * @var string
      */
     protected $table = 'detail_pemeriksaan_gigi';
+
+    protected $softCascade = ['indekKaries'];
+
+    protected $dates = ['deleted_at'];
 
 
     /**

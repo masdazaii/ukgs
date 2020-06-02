@@ -81,7 +81,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Edit Kelurahan</h5>
+                    <h5 class="modal-title">Edit Soal Buta Warna</h5>
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
 
@@ -124,6 +124,12 @@
 @endsection
 @section('script')
     <script>
+        const swalInit = swal.mixin({
+            buttonsStyling: false,
+            confirmButtonClass: 'btn btn-primary',
+            cancelButtonClass: 'btn btn-light'
+        });
+
         $(document).ready(function() {
             $("#table").DataTable({
                 "destroy": true,
@@ -157,7 +163,6 @@
             }
 
             $('.gambarEdit').change(function(){
-                console.log("jadi");
                 imgPreview(this);
             });
         });
@@ -181,13 +186,19 @@
                 processData:false,
                 contentType:false,
                 data: fd,
-                success:function(data){
-                    // console.log(data);
+                success:function(response){
+                    $('#createForm')[0].reset();
                     $('#modal_form_vertical').modal('hide');
                     $("#table").DataTable().ajax.reload();
                     Swal.fire({
                         type: 'success',
-                        title : 'Data kelurahan berhasil dihapus',
+                        title : response,
+                    });
+                },
+                error: function(xhr){
+                    Swal.fire({
+                        type: 'success',
+                        title : xhr.responseText,
                     });
                 }
             })
@@ -233,12 +244,19 @@
                 processData:false,
                 contentType:false,
                 data: fd,
-                success:function(){
+                success:function(response){
+                    $('#editForm')[0].reset();
                     $('#modal_form_vertical_edit').modal('hide');
                     $("#table").DataTable().ajax.reload();
                     Swal.fire({
                         type: 'success',
-                        title : 'Data kelurahan berhasil diupdate',
+                        title : response,
+                    });
+                },
+                error: function(xhr){
+                    Swal.fire({
+                        type: 'success',
+                        title : xhr.responseText,
                     });
                 }
             })
@@ -248,19 +266,35 @@
             const id = $(this).data("id");
             let alamat = '{{ route('soalButaWarna.destroy',':id') }}';
             alamat = alamat.replace(':id',id);
-            $.ajax({
-                url : alamat,
-                type: 'POST',
-                data: {
-                    _token:'{{ csrf_token() }}',
-                    _method: 'Delete'
-                },
-                success: function(){
-                    $("#table").DataTable().ajax.reload();
-                    Swal.fire({
-                        type: 'success',
-                        title : 'Data kelurahan berhasil dihapus',
-                    });
+
+            swalInit({
+                title: 'Apakah anda yakin ingin menghapus data ini ?',
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it!'
+            }).then(function(result){
+                if (result.value) {
+                    $.ajax({
+                        url : alamat,
+                        type: 'POST',
+                        data: {
+                            _token:'{{ csrf_token() }}',
+                            _method: 'Delete'
+                        },
+                        success: function(response){
+                            $("#table").DataTable().ajax.reload();
+                            Swal.fire({
+                                type: 'success',
+                                title : response,
+                            });
+                        },
+                        error: function(xhr){
+                            Swal.fire({
+                                type: 'success',
+                                title : xhr.responseText,
+                            });
+                        }
+                    })
                 }
             })
         })

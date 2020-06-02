@@ -83,7 +83,6 @@ class PemeriksaanImtController extends Controller
             })
             ->rawColumns(['kategori','action'])
             ->make(true);
-
     }
 
     /**
@@ -207,7 +206,7 @@ class PemeriksaanImtController extends Controller
 
                 $pemeriksaanImt->rujukan = $request->rujukan;
                 $pemeriksaanImt->save();
-            }else{
+            }else if($pemeriksaanImt->rujukan == 1){
                 if ($request->rujukan == 1) {
                     $detailRujukan = DetailRujukan::where('pemeriksaan_id',$id)->first();
                     if (isset($request->deskripsi)) {

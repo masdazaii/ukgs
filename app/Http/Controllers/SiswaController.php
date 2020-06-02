@@ -8,7 +8,7 @@ use App\Kelas;
 use App\Siswa;
 use App\KelasMapping;
 use App\Imports\SiswaImport;
-use App\helpers\FunctionHelper;
+use App\Helpers\FunctionHelper;
 use Excel;
 use Response;
 use session;
@@ -87,16 +87,6 @@ class SiswaController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -104,8 +94,6 @@ class SiswaController extends Controller
      */
     public function store(Request $request)
     {
-        // return $request->all();
-
         $this->validate($request,[
             'kelasId'=> 'required',
             'siswaName' => 'required',
@@ -171,7 +159,6 @@ class SiswaController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // return $request->all();
         $this->validate($request,[
             'siswaName' => 'required',
             'nis' =>'required',
@@ -217,14 +204,12 @@ class SiswaController extends Controller
     {
         DB::beginTransaction();
         try {
-            $kelasMappingSiswa = KelasMapping::where('siswa_id',$id)->first();
-            $kelasMappingSiswa->delete();
             $siswa = Siswa::findOrFail($id);
             $siswa->delete();
             DB::commit();
 
             return Response::json('Data siswa berhasil dihapus',200);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             DB::rollback();
             return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
         }
@@ -243,7 +228,7 @@ class SiswaController extends Controller
                 $file = $request->file('file');
                 Excel::import(new SiswaImport($kelasId),$file);
                 return Response::json('Berhasil data siswa excel berhasil dimasukkan',200);
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
             }
         }
@@ -255,14 +240,25 @@ class SiswaController extends Controller
         $siswaNaikKelas = $request->selected;
         $kelasTujuan = $request->kelasTujuan;
 
-        for ($i=0; $i < count($siswaNaikKelas); $i++) { 
-            $kelasMapping = new KelasMapping;
-            $kelasMapping->siswa_id = $siswaNaikKelas[$i];
-            $kelasMapping->kelas_id = $kelasTujuan;
-            $kelasMapping->tahun_pelajaran = FunctionHelper::getTahunPelajaran();
-            $kelasMapping->save();
-        }
+        DB::beginTransaction();
+        try {
+            for ($i=0; $i < count($siswaNaikKelas); $i++) { 
+                $kelasMapping = new KelasMapping;
+                $kelasMapping->siswa_id = $siswaNaikKelas[$i];
+                $kelasMapping->kelas_id = $kelasTujuan;
+                $kelasMapping->tahun_pelajaran = FunctionHelper::getTahunPelajaran();
+                $kelasMapping->save();
 
-        return Response::json('',200);
+                $existingKelasMapping = KelasMapping::where('siswa_id',$siswaNaikKelas[$i])
+                                        ->first();
+                $existingKelasMapping->delete();
+            }
+
+            DB::commit();
+            return Response::json('Siswa berhasil naik kelas',200);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
+        }
     }
 }

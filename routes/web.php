@@ -61,11 +61,19 @@ Route::resource('soalButaWarna','SoalButaWarnaController');
 //user 
 Route::resource('user','UserController');
 
+//Riwayat Pemeriksaan
+Route::get('riwayatPemeriksaan', 'RiwayatController@index');
+Route::get('riwayatKelas','RiwayatController@riwayatKelas');
+Route::get('riwayatSiswa','RiwayatController@riwayatSiswa');
+Route::get('riwayatPemeriksaanSiswa','RiwayatController@riwayatPemeriksaanSiswa');
+
 //Rujukan
 Route::resource('rujukan','RujukanController');
 
 //Laporan
-Route::get('laporan/{id}','DashboardController@laporan');
+Route::get('laporan','LaporanController@index');
+Route::get('laporan/{id}','DashboardController@laporan')->name('laporan');
+Route::get('cekPeriksaSekolah','LaporanController@cekPeriksaSekolah');
 
 Route::get('/pemeriksaan','ExController@pemeriksaan');
 
@@ -89,6 +97,7 @@ Route::get('kelurahanEditAjax','KelurahanController@kelurahanEditAjax');
 Route::get('soalButaWarnaAjax','SoalButaWarnaController@soalButaWarnaAjax');
 Route::get('/changeStatus','UserController@changeStatus');
 Route::get('typeahead','RujukanController@typeahead');
+Route::get('typeaheadRiwayat','RiwayatController@typeaheadRiwayat');
 Route::get('rujukanAjax/{sekolahId}','RujukanController@rujukanAjax')->name('rujukanAjax');
 Route::post('tangani/{id}','RujukanController@tangani')->name('tangani');
 

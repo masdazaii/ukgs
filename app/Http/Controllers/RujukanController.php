@@ -29,6 +29,7 @@ class RujukanController extends Controller
     	$sekolah = Sekolah::where('sekolah_name', 'LIKE','%'.$param.'%')
     				->select('sekolah_name','sekolah_id')
     				->get();
+                    
     	return Response::json($sekolah,200);
     }
 

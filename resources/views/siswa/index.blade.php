@@ -352,6 +352,10 @@
                     success: function(response){
                         $('#modal_mini').modal('hide');
                         $("#table").DataTable().ajax.reload();
+                        swalInit({
+                            type: 'success',
+                            title : response
+                        })
                     }
                 })
             })

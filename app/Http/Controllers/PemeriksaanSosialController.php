@@ -145,17 +145,6 @@ class PemeriksaanSosialController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
      * Show the form for editing the specified resource.
      *
      * @param  int  $id
@@ -242,7 +231,7 @@ class PemeriksaanSosialController extends Controller
             $pemeriksaanSosial->delete();
             DB::commit();
             return Response::json('Data pemeriksaan sosial berhasil dihapus',200);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             DB::rollback();
             return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
         }
