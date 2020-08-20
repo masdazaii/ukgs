@@ -32,8 +32,21 @@
 		<div class="card-body">
 			<div class="row">
 				<div class="col-md-6">
-					<label class="form-label">Nama sekolah</label>
-                    <input id="search" type="text" class="form-control" placeholder="Masukan nama sekolah">
+					<div class="row">
+                        <div class="col-sm-6">
+                            <label class="form-label">Nama sekolah</label>
+                            <input id="search" type="text" class="form-control" placeholder="Masukan nama sekolah">
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Tahun ajaran</label>
+                            <select id="tahunAjaran" class="form-control">
+                                <option>Silahkan pilih tahun ajaran</option>
+                                @for($i = 0; $i < count($tahunAjaran); $i++)
+                                    <option value="{{ $tahunAjaran[$i]->tahun_ajaran_id }}">{{ $tahunAjaran[$i]->tahun_ajaran }}</option>
+                                @endfor
+                            </select>
+                        </div>
+                    </div>
                     <table class="table table-bordered mt-3">
                     	<thead>
                     		<tr>
@@ -62,11 +75,19 @@
 	</div>
 @endsection
 @section('librariesJS')
-	<script src="{{ asset('limitless/global_assets/js/plugins/forms/inputs/typeahead/typeahead.bundle.min.js') }}"></script>
+    <script src="{{ asset('limitless/global_assets/js/plugins/forms/inputs/typeahead/typeahead.bundle.min.js') }}"></script>
+    <script src="{{ asset('limitless/global_assets/js/plugins/notifications/sweet_alert.min.js') }}"></script>
 @endsection
 @section('script')
 	<script>
 		$(document).ready(function(){
+            const swalInit = swal.mixin({
+                buttonsStyling: false,
+                confirmButtonClass: 'btn btn-primary',
+                cancelButtonClass: 'btn btn-light'
+            });
+
+            let tempSekolah = null;
 			let data = new Bloodhound({
                 datumTokenizer: Bloodhound.tokenizers.obj.whitespace("sekolah_id","sekolah_name"),
                 queryTokenizer: Bloodhound.tokenizers.whitespace,
@@ -90,29 +111,47 @@
                     source: data.ttAdapter()
                 }
             ).on('typeahead:selected',function(event,data){
-            	const sekolahId = data.sekolah_id;
-            	let downloadUrl = '{{ route('laporan',':id') }}';
-            	downloadUrl = downloadUrl.replace(':id',sekolahId);
-                $('.download').attr('href',downloadUrl);
-                $('.download').attr('disabled',false);
+            	tempSekolah = data.sekolah_id;
+            })
+
+            $("#tahunAjaran").on('change',function(){
+                const tahunAjaran = $(this).val();
+                let downloadUrl = '{{ route('laporan',[':id',':tahunAjaran']) }}';
+                downloadUrl = downloadUrl.replace(':id',tempSekolah);
+                downloadUrl = downloadUrl.replace(':tahunAjaran',tahunAjaran);
                 $.ajax({
-                	url : '{{ url('cekPeriksaSekolah') }}',
-                	type : 'GET',
-                	data : {
-                		sekolahId : sekolahId
-                	},
-                	success : function(response){
-                		document.getElementById('belumDiperiksa').innerText = response.belumDiperiksa;
-                		document.getElementById('sedangDiperiksa').innerText = response.sedangDiperiksa;
-                		document.getElementById('sudahDiperiksa').innerText = response.sudahDiperiksa;
-                	}
+                    url : '{{ url('cekPeriksaSekolah') }}',
+                    type : 'GET',
+                    data : {
+                        sekolahId : tempSekolah,
+                        tahunAjaran : tahunAjaran
+                    },
+                    success : function(response){
+                        if(response.sudahDiperiksa > 0){
+                            $('.download').attr('href',downloadUrl);
+                            $('.download').attr('disabled',false);
+                        }else{
+                            swalInit({
+                                type: 'warning',
+                                title : "Tidak ada data yang dapat diunduh",
+                            });
+                        }
+
+                        document.getElementById('belumDiperiksa').innerText = response.belumDiperiksa;
+                        document.getElementById('sedangDiperiksa').innerText = response.sedangDiperiksa;
+                        document.getElementById('sudahDiperiksa').innerText = response.sudahDiperiksa;
+                    }
                 })
+
+
+
+
 
             })
 
             $('.download').on('click',function(){
-            	const url = $(this).attr('href');
-            	location.href = url; 
+                const url = $(this).attr("href");
+                location.href = url;
             })
 		})
 	</script>

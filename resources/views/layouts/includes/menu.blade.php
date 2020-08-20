@@ -86,10 +86,13 @@
           </a>
         </li>
         <li class="nav-item">
-          <a href="{{ URL::to('/sekolah') }}" class="nav-link"><i class="icon-graduation2"></i> <span>Data Sekolah</span></a>
-        </li>
+            <a href="{{ URL::to('/tahunAjaran') }}" class="nav-link"><i class="icon-calendar2"></i> <span>Data Tahun Ajaran</span></a>
+          </li>
         <li class="nav-item">
           <a href="{{ URL::to('/kelurahan') }}" class="nav-link"><i class="icon-location3"></i> <span>Data Kelurahan</span></a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ URL::to('/sekolah') }}" class="nav-link"><i class="icon-graduation2"></i> <span>Data Sekolah</span></a>
         </li>
         <li class="nav-item nav-item-submenu">
           <a href="#" class="nav-link"><i class="icon-accessibility"></i> <span>Pemeriksaan</span></a>
@@ -113,12 +116,15 @@
         <li class="nav-item">
           <a href="{{ URL::to('/user') }}" class="nav-link"><i class="icon-users"></i><span>Data Pengguna</span></a>
         </li>
+        <li class="nav-item">
+            <a href="{{ URL::to('/logo') }}" class="nav-link"><i class="icon-image4"></i><span>Kustomisasi Logo</span></a>
+        </li>
       </ul>
     </div>
     <!-- /main navigation -->
 
   </div>
   <!-- /sidebar content -->
-  
+
 </div>
 <!-- /main sidebar -->

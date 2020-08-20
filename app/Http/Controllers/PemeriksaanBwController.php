@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use DB;
 use Auth;
-use session;
 use URL;
 use Response;
 use App\Pemeriksaan;
 use App\DetailPemeriksaanBw;
 use App\DetailRujukan;
+use App\Helpers\FunctionHelper;
 use App\SoalButaWarna;
 
 class PemeriksaanBwController extends Controller
@@ -32,18 +32,21 @@ class PemeriksaanBwController extends Controller
 
     public function detailPemeriksaanBwAjax($id,$sekolahId)
     {
-        $data = Pemeriksaan::where('jenis_pemeriksaan',$id)
-                ->with(['detailPemeriksaanBw' => function($query){ 
+        $data = Pemeriksaan::where('tahun_ajaran',FunctionHelper::getTahunPelajaran())
+                ->where('jenis_pemeriksaan',$id)
+                ->with(['detailPemeriksaanBw' => function($query){
                     $query->with(['soalButaWarna' => function($q){ $q->select('soal_buta_warna_id','jawaban_benar');} ]);
                 },'pemeriksa', 'siswa'])
                 ->whereHas('siswa', function($query) use ($sekolahId){
                     $query->whereHas('kelasMapping', function($query) use ($sekolahId){
+                        $query->where('tahun_pelajaran', FunctionHelper::getTahunPelajaran());
                         $query->whereHas('kelas', function($query) use ($sekolahId){
                             $query->where('sekolah_id',$sekolahId);
                         });
                     });
                 })
-                ->orderBy('created_at','DESC');
+                ->orderBy('created_at','DESC')
+                ->get();
 
         return datatables()->of($data)
             ->addColumn('action',function($data) use ($id,$sekolahId){
@@ -86,14 +89,15 @@ class PemeriksaanBwController extends Controller
         DB::beginTransaction();
         try {
             $pemeriksaanBw = new Pemeriksaan;
-            $pemeriksaanBw->siswa_id = $request->siswaId;   
+            $pemeriksaanBw->siswa_id = $request->siswaId;
             $pemeriksaanBw->jenis_pemeriksaan = $request->jenisPemeriksaan;
             $pemeriksaanBw->pemeriksa_id = Auth::user()->id;
+            $pemeriksaanBw->tahun_ajaran = FunctionHelper::getTahunPelajaran();
             $pemeriksaanBw->save();
 
             $pemeriksaanBwId = $pemeriksaanBw->pemeriksaan_id;
             $temp = null;
-            for ($i=0; $i < count($request->hasilPemeriksaan); $i++) { 
+            for ($i=0; $i < count($request->hasilPemeriksaan); $i++) {
                 $detailPemeriksaanBw = new DetailPemeriksaanBw;
                 $detailPemeriksaanBw->pemeriksaan_bw_id = $pemeriksaanBwId;
                 $detailPemeriksaanBw->soal_bw_id = $request->hasilPemeriksaan[$i]['soalId'];
@@ -106,7 +110,7 @@ class PemeriksaanBwController extends Controller
                 }
             }
 
-            if ($temp >= 3) {
+            if ($temp > 3) {
                 $pemeriksaanBw->rujukan = 1;
                 $pemeriksaanBw->save();
 
@@ -131,14 +135,14 @@ class PemeriksaanBwController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($sekolahId,$id,$pemeriksaanId)
+    public function edit($jenisPemeriksaanId,$sekolahId,$pemeriksaanId)
     {
         $pemeriksaanBw = Pemeriksaan::with(['detailPemeriksaanBw' => function($query){
                             $query->with('soalButaWarna');
                         }])
                         ->findOrFail($pemeriksaanId);
 
-        return view('pemeriksaan.pemeriksaanBw.edit',compact('pemeriksaanBw','id','sekolahId')); 
+        return view('pemeriksaan.pemeriksaanBw.edit',compact('pemeriksaanBw','sekolahId','jenisPemeriksaanId'));
     }
 
     /**
@@ -157,7 +161,7 @@ class PemeriksaanBwController extends Controller
         DB::beginTransaction();
         try {
             $temp = 0;
-            for ($i=0; $i < count($request->hasilPemeriksaan); $i++) { 
+            for ($i=0; $i < count($request->hasilPemeriksaan); $i++) {
                 $pemeriksaanBw = DetailPemeriksaanBw::where('pemeriksaan_bw_id',$id)
                                 ->where('soal_bw_id',$request->hasilPemeriksaan[$i]['soalId'])
                                 ->first();
@@ -171,10 +175,18 @@ class PemeriksaanBwController extends Controller
             }
 
             $pemeriksaan = Pemeriksaan::findOrFail($id);
-            if ($temp >= 3) {
+            if ($temp > 3 && $pemeriksaan->rujukan == 0) {
                 $pemeriksaan->rujukan = 1;
-            }else{
+
+                $detailRujukan = new DetailRujukan;
+                $detailRujukan->pemeriksaan_id = $id;
+                $detailRujukan->deskripsi = "terdapat lebih dari 3 soal yang salah sehingga siswa disarankan untuk dirujuk ke rumah sakit terdekat";
+                $detailRujukan->save();
+            }else if($temp <= 3){
                 $pemeriksaan->rujukan = 0;
+
+                $detailRujukan = DetailRujukan::where('pemeriksaan_id',$id)->first();
+                $detailRujukan->delete();
             }
             $pemeriksaan->save();
 

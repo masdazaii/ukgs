@@ -33,13 +33,13 @@
                 <div class="col-md-4">
                     <label class="form-label">Pilih Kelas</label>
                     <select class="form-control pilih-kelas">
-                        
+
                     </select>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Pilih Siswa</label>
                     <select class="form-control pilih-siswa">
-                        
+
                     </select>
                 </div>
             </div>
@@ -159,7 +159,7 @@
             <table>
         </div>
     </div>
-    
+
 @endsection
 @section('librariesJS')
     <script src="{{ asset('limitless/global_assets/js/plugins/notifications/sweet_alert.min.js') }}"></script>
@@ -178,7 +178,7 @@
                 datumTokenizer: Bloodhound.tokenizers.obj.whitespace("sekolah_id","sekolah_name"),
                 queryTokenizer: Bloodhound.tokenizers.whitespace,
                 remote: {
-                    url:'{{ url('typeaheadRiwayat') }}'+'?term=%QUERY',
+                url:'{{ url('typeaheadRiwayat') }}'+'?term=%QUERY',
                     wildcard:'%QUERY'
                 }
             })
@@ -230,7 +230,7 @@
                         if(response.length > 0){
                             $('.pilih-siswa').append('<option>Silahkan pilih siswa</option>')
                             for (let i = 0; i < response.length; i++) {
-                                $('.pilih-siswa').append('<option value='+response[i].siswa_id+'|'+response[i].tahun_pelajaran+'>'+response[i].siswa.nama+' ('+response[i].tahun_pelajaran+')'+'</option>')
+                                $('.pilih-siswa').append('<option value='+response[i].siswa_id+'|'+response[i].tahun_ajaran.tahun_ajaran_id+'>'+response[i].siswa.nama+' ('+response[i].tahun_ajaran.tahun_ajaran+')'+'</option>')
                             }
                         }else{
                             $('.pilih-siswa').append('<option>Tidak ada data siswa dalam kelas ini</option>')
@@ -251,7 +251,7 @@
                         if(response.length == 0){
                             swalInit({
                                 type : 'warning',
-                                title : "Data pemeriksaan tidak ditemukan" 
+                                title : "Data pemeriksaan tidak ditemukan"
                             })
                         }else{
                             if(response.hasOwnProperty('pemeriksaangigi')){
@@ -269,7 +269,7 @@
                             // makePemeriksaanBw(response.pemeriksaanbw);
                         }
                     }
-                }) 
+                })
             })
 
             function makePemeriksaanGigi(response)

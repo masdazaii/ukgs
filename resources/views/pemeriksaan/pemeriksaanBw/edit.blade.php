@@ -39,7 +39,7 @@
                 <h6>Soal ke-{{$i+1}}</h6>
                 <fieldset>
                     <div class="row">
-                        <div class="col-md-8 text-center" style="margin: 0 auto; float: none;">
+                        <div class="col-md-4 text-center" style="margin: 0 auto; float: none;">
                             <!-- Zooming -->
                             <div class="card">
                                 <input type="hidden" id="soal{{ $i }}" value="{{ $pemeriksaanBw->detailPemeriksaanBw[$i]->soal_bw_id }}">
@@ -52,7 +52,7 @@
                                     <p class="card-text">{{ $pemeriksaanBw->detailPemeriksaanBw[$i]->soalButaWarna->deskripsi }}</p>
                                     <div class="form-group">
                                         <label>Jawaban<span class="text-danger">*</span></label>
-                                        <input type="text" value="{{ $pemeriksaanBw->detailPemeriksaanBw[$i]->jawaban }}" id="jawaban{{$i}}" class="form-control required">
+                                        <input type="number" value="{{ $pemeriksaanBw->detailPemeriksaanBw[$i]->jawaban }}" id="jawaban{{$i}}" class="form-control required">
                                     </div>
                                 </div>
                             </div>
@@ -137,25 +137,21 @@
                                 swalInit({
                                     type: 'success',
                                     title : response,
-                                });
-
-                                location.href = '{{ url('pemeriksaan/'.$pemeriksaanBw->jenis_pemeriksaan.'/periksa/'.$sekolahId) }}';
+                                }).then(function(){
+                                    location.href = '{{ url('pemeriksaan/'.$jenisPemeriksaanId.'/periksa/'.$sekolahId) }}';
+                                })
                             },
                             error: function(xhr){
                                 swalInit({
                                     type: 'error',
                                     title : xhr.responseText,
                                 });
-
-                                location.href = '{{ url('pemeriksaan/'.$pemeriksaanBw->jenis_pemeriksaan.'/periksa/'.$sekolahId) }}';
                             }
                         });
                     }
 
                     form.validate().settings.ignore = ':disabled';
                     return form.valid();
-                },
-                onFinished: function (event, currentIndex) {
                 }
             });
 

@@ -77,7 +77,7 @@
 @endsection
  --}}
 
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -193,7 +193,7 @@
                                     </div>
 
                                     <div class="form-group form-group-feedback form-group-feedback-right">
-                                        <input type="text" class="form-control @error('noHp') is-invalid @enderror" placeholder="Masukan No telephone" name="noHp" required>
+                                        <input type="tel" class="form-control @error('noHp') is-invalid @enderror" placeholder="Masukan No telephone" name="noHp" required>
                                         <div class="form-control-feedback">
                                             <i class="icon-phone2 text-muted"></i>
                                         </div>

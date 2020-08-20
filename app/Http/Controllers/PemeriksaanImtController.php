@@ -5,14 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Pemeriksaan;
 use App\DetailPemeriksaanImt;
-use App\Sekolah;
-use App\DetailRujukan;   
-use Auth;             
-use URL;
+use App\DetailRujukan;
+use App\Helpers\FunctionHelper;
+use Auth;
 use DB;
-use session;
 use Response;
-
+use Validator;
 
 class PemeriksaanImtController extends Controller
 {
@@ -32,10 +30,12 @@ class PemeriksaanImtController extends Controller
 
     public function detailPemeriksaanImtAjax($id,$sekolahId)
     {
-        $data = Pemeriksaan::where('jenis_pemeriksaan',$id)
+        $data = Pemeriksaan::where('tahun_ajaran',FunctionHelper::getTahunPelajaran())
+                ->where('jenis_pemeriksaan',$id)
                 ->with('detailPemeriksaanImt','pemeriksa', 'siswa')
                 ->whereHas('siswa', function($query) use ($sekolahId){
                     $query->whereHas('kelasMapping', function($query) use ($sekolahId){
+                        $query->where('tahun_pelajaran',FunctionHelper::getTahunPelajaran());
                         $query->whereHas('kelas', function($query) use ($sekolahId){
                             $query->where('sekolah_id',$sekolahId);
                         });
@@ -43,10 +43,8 @@ class PemeriksaanImtController extends Controller
                 })
                 ->get();
 
-        // return $data;
-
         return datatables()->of($data)
-            ->addColumn('action',function($data) use ($id,$sekolahId){
+            ->addColumn('action',function($data){
                 $button = '';
                 $button .= '
                     <button data-idPemeriksaanImt="'.$data->pemeriksaan_id.'" class="btn btn-success btn-sm detail" >Detail</button>
@@ -93,8 +91,7 @@ class PemeriksaanImtController extends Controller
      */
     public function store(Request $request)
     {
-        // return $request->all();
-        $this->validate($request,[
+        $validator = Validator::make($request->all(),[
             'bb' => 'required',
             'tb' =>'required',
             'rujukan' => 'required',
@@ -103,12 +100,17 @@ class PemeriksaanImtController extends Controller
             'siswaId' => 'required'
         ]);
 
+        if($validator->fails()){
+            return Response::json($validator->messages(),422);
+        }
+
         DB::beginTransaction();
         try {
             $pemeriksaanImt = new Pemeriksaan;
             $pemeriksaanImt->pemeriksa_id = Auth::user()->id;
             $pemeriksaanImt->siswa_id = $request->siswaId;
             $pemeriksaanImt->jenis_pemeriksaan = $request->jenisPemeriksaan;
+            $pemeriksaanImt->tahun_ajaran = FunctionHelper::getTahunPelajaran();
             $pemeriksaanImt->rujukan = $request->rujukan;
             $pemeriksaanImt->save();
 
@@ -126,7 +128,7 @@ class PemeriksaanImtController extends Controller
                 if (isset($request->deskripsi)) {
                     $rujukan->deskripsi = $request->deskripsi;
                 }
-                $rujukan->save(); 
+                $rujukan->save();
             }
             DB::commit();
 
@@ -177,13 +179,17 @@ class PemeriksaanImtController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // return $request->all();
-        $this->validate($request,[
+
+        $validator = Validator::make($request->all(),[
             'bb' => 'required',
             'tb' =>'required',
             'vaksin' => 'required',
             'rujukan' => 'required'
         ]);
+
+        if($validator->fails()){
+            return Response::json($validator->messages(),422);
+        }
 
         DB::beginTransaction();
         try {
@@ -249,7 +255,7 @@ class PemeriksaanImtController extends Controller
                 $detailRujukan = DetailRujukan::where('pemeriksaan_id',$id)->first();
                 $detailRujukan->delete();
             }
-            
+
             DB::commit();
             return Response::json('Data pemeriksaan IMT berhasil dihapus',200);
         } catch (\Exception $e) {

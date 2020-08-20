@@ -28,7 +28,7 @@
                 <div class="col-md-6">
                     <div class="text-left">
                         <button class="btn btn-primary" data-toggle="modal" data-target="#modal_form_vertical_create">Tambah siswa baru</button>
-                    </div>      
+                    </div>
                 </div>
                 <div class="col-md-6">
                     <div class="row">
@@ -83,7 +83,6 @@
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
                 <form id="createForm" action="" method="post" enctype="multipart/form-data">
-                    @csrf
                     <div class="modal-body">
                         <div class="form-group">
                             <label>Nama Siswa</label>
@@ -159,7 +158,6 @@
                 </div>
 
                 <form id="editForm" action="" method="post" enctype="multipart/form-data">
-                    @csrf
                     {{ method_field('PUT') }}
                     <div class="modal-body">
                         <div class="form-group">
@@ -232,26 +230,37 @@
 
     <!-- Mini modal -->
     <div id="modal_mini" class="modal fade" tabindex="-1">
-        <div class="modal-dialog modal-sm">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Pilih kelas tujuan</h5>
+                    <h5 class="modal-title">Naik kelas siswa</h5>
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
 
-                <div class="modal-body">
-                    <div class="form-group row">
-                        <label class="col-form-label col-lg-3">Single select</label>
-                        <div class="col-lg-9">
-                            <select id="kelasTersedia" class="form-control">
-                                <option>Silahkan pilih kelas tujuan</option>
-                                @for($i = 0 ;$i < count($existingKelas) ;$i++)
-                                    <option value="{{ $existingKelas[$i]->kelas_id }}"> {{ $existingKelas[$i]->kelas_name }}</option>
-                                @endfor
-                            </select>
+                <form id="naikKelasForm">
+                    <div class="modal-body">
+                        <div class="form-group row">
+                            <label class="col-form-label col-lg-3">Pilih kelas tujuan</label>
+                            <div class="col-lg-3">
+                                <select id="kelasTersedia" class="form-control" required>
+                                    <option value="default">Silahkan pilih kelas tujuan</option>
+                                    @for($i = 0 ;$i < count($existingKelas) ;$i++)
+                                        <option value="{{ $existingKelas[$i]->kelas_id }}"> {{ $existingKelas[$i]->kelas_name }}</option>
+                                    @endfor
+                                </select>
+                            </div>
+                            <label class="col-form-label col-lg-3">Pilih tahun ajaran</label>
+                            <div class="col-lg-3">
+                                <select id="tahunAjaran" class="form-control" required>
+                                    <option value="default">Silahkan pilih atahun ajaran</option>
+                                    @for($i = 0 ;$i < count($tahunAjaran) ;$i++)
+                                        <option value="{{ $tahunAjaran[$i]->tahun_ajaran_id }}"> {{ $tahunAjaran[$i]->tahun_ajaran }}</option>
+                                    @endfor
+                                </select>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </form>
 
                 <div class="modal-footer">
                     <button type="button" class="btn btn-link" data-dismiss="modal">Close</button>
@@ -279,7 +288,7 @@
             confirmButtonClass: 'btn btn-primary',
             cancelButtonClass: 'btn btn-light'
         });
-        
+
 		$(document).ready(function() {
             let selected = [];
             console.log("cek ready");
@@ -318,21 +327,22 @@
             $('#table tbody').on('click', '.select-checkbox', function () {
                 let id = this.closest('tr').id;
                 let index = $.inArray(id, selected);
-         
+
                 if ( index === -1 ) {
                     selected.push( id );
                 } else {
                     selected.splice( index, 1 );
                 }
 
+                console.log(selected);
+                console.log(selected.length);
                 if(selected.length > 0){
                     $('#naikKelas').prop("disabled", false);
                 }else{
                     $('#naikKelas').prop("disabled", true);
                 }
-         
+
                 $(this).closest('tr').toggleClass('selected');
-                console.log(selected);
             });
 
             $('#excel').on('click',function(){
@@ -340,24 +350,52 @@
             });
 
             $('#naikKelasSubmit').on('click',function(){
-                const kelasTujuan = $('#kelasTersedia').val();
-                $.ajax({
-                    url :'{{ url('sekolah/'.$kelas->sekolah_id.'/kelas/'.$kelas->kelas_id.'/naikKelas') }}',
-                    method : "POST",
-                    data : {
-                        selected : selected,
-                        kelasTujuan : kelasTujuan,
-                        _token : '{{ csrf_token() }}'
+                const naikKelasForm = $("#naikKelasForm");
+                naikKelasForm.validate({
+                    errorClass: 'validation-invalid-label',
+                    highlight: function(element, errorClass) {
+                        $(element).removeClass(errorClass);
                     },
-                    success: function(response){
-                        $('#modal_mini').modal('hide');
-                        $("#table").DataTable().ajax.reload();
-                        swalInit({
-                            type: 'success',
-                            title : response
-                        })
+                    unhighlight: function(element, errorClass) {
+                        $(element).removeClass(errorClass);
                     }
-                })
+                });
+
+                const selKelasTujuan = document.getElementById('kelasTersedia');
+                const valKelasTujuan = selKelasTujuan.options[selKelasTujuan.selectedIndex].value;
+                const selTahunAjaran = document.getElementById('tahunAjaran');
+                const valTahunAjaran = selTahunAjaran.options[selTahunAjaran.selectedIndex].value;
+
+                if(valKelasTujuan == "default" || valTahunAjaran == "default"){
+                    swalInit({
+                        type: 'warning',
+                        title : "Silahkan pilih field yang diperlukan",
+                    });
+                }
+
+                if(naikKelasForm.valid() && valKelasTujuan != "default" && valTahunAjaran != "default" ){
+                    const kelasTujuan = $('#kelasTersedia').val();
+                    const tahunAjaran = $('#tahunAjaran').val();
+                    $.ajax({
+                        url :'{{ url('sekolah/'.$kelas->sekolah_id.'/kelas/'.$kelas->kelas_id.'/naikKelas') }}',
+                        method : "POST",
+                        data : {
+                            selected : selected,
+                            kelasTujuan : kelasTujuan,
+                            tahunAjaran:tahunAjaran
+                        },
+                        success: function(response){
+                            $('#naikKelas').prop("disabled", true);
+                            $('#modal_mini').modal('hide');
+                            $("#table").DataTable().ajax.reload();
+                            selected = [];
+                            swalInit({
+                                type: 'success',
+                                title : response
+                            })
+                        }
+                    })
+                }
             })
 
             $('.createSubmit').on('click',function(){
@@ -379,6 +417,7 @@
                         method: 'POST',
                         data: request,
                         success:function(response){
+                            createForm[0].reset();
                             $("#table").DataTable().ajax.reload();
                             $('#modal_form_vertical_create').modal('hide');
                             swalInit({
@@ -451,7 +490,7 @@
                     title : response,
                 });
             },
-            error:function(xhr,status,error){
+            error:function(xhr){
                 swalInit({
                     type: 'error',
                     title : xhr.responseText,
@@ -467,9 +506,6 @@
             updateUrl = updateUrl.replace(':id',id);
             $.ajax({
                 url : editUrl,
-                headers : {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
                 method : 'get',
                 success : function(data){
                     $("#siswaNameEdit").val(data.nama);
@@ -526,7 +562,7 @@
                     })
                 }
             })
-            
+
         })
 
 	</script>

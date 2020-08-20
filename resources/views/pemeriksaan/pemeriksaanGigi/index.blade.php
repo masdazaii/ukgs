@@ -28,7 +28,7 @@
                         <tr>
                             <th>NPSN</th>
                             <th>Nama Sekolah</th>
-                            <th>Kota Administrasi</th>
+                            <th>Alamat</th>
                             <th width="25%">Action</th>
                         </tr>
                     </thead>
@@ -45,9 +45,7 @@
 @endsection
 @section('librariesJS')
 	<script type="text/javascript" src="{{ asset('limitless/global_assets/js/plugins/tables/datatables/datatables.min.js') }}"></script>
-	<script type="text/javascript" src="{{ asset('limitless/global_assets/js/plugins/forms/selects/select2.min.js') }}"></script>
 	<script type="text/javascript" src="{{ asset('limitless/global_assets/js/demo_pages/datatables_basic.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('limitless/global_assets/js/demo_pages/components_dropdowns.js') }}"></script>
     <script src="{{ asset('limitless/global_assets/js/plugins/notifications/sweet_alert.min.js') }}"></script>
 @endsection
 @section('script')
@@ -64,7 +62,7 @@
                 "columns": [
                     {data: 'npsn',name:'npsn'},
                     {data: 'sekolah_name', name: 'sekolah_name'},
-                    {data: 'kota_administrasi', name: 'kota_administrasi'},
+                    {data: 'alamat', name: 'alamat'},
                     {data: 'action', name: 'action', "orderable": false, "searchable": false}
                 ],
                 "fixedColumns": true,

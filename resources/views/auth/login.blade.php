@@ -77,7 +77,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Limitless - Responsive Web Application Kit by Eugene Kopyov</title>
+    <title>Login - UKGS - Sistem pemeriksaan uks berbasis web</title>
 
     <!-- Global stylesheets -->
     <link href="https://fonts.googleapis.com/css?family=Roboto:400,300,100,500,700,900" rel="stylesheet" type="text/css">
@@ -101,7 +101,6 @@
             $('.form-input-styled').uniform();
         })
     </script>
-    <!-- /theme JS files -->
 
 </head>
 
@@ -125,6 +124,9 @@
                     @csrf
                     <div class="card mb-0">
                         <div class="card-body">
+                            <div class="text-center mb-2">
+                                <img src=" {{ FunctionHelper::getLoginLogoActive() }}">
+                            </div>
                             <div class="text-center mb-2">
                                 <h5 class="mb-0">Login to your account</h5>
                             </div>
@@ -160,7 +162,6 @@
                                         Remember
                                     </label>
                                 </div>
-                                <a href="login_password_recover.html" class="ml-auto">Forgot password?</a>
                             </div>
 
                             <div class="form-group">

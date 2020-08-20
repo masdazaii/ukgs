@@ -15,7 +15,6 @@
 		        		<a href="{{ URL::to('/') }}" class="breadcrumb-item"><i class="icon-home2 mr-2"></i> Home</a>
 		        		<span class="breadcrumb-item active">Pemeriksaan IMT</span>
 		      		</div>
-		      		<a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
 		    	</div>
 		  	</div>
 		</div>
@@ -28,11 +27,12 @@
                 <table class="table table-striped" id="table">
                     <thead>
                         <tr>
-                            <th width="30%">Nama</th>
+                            <th width="25%">Nama</th>
+                            <th width="10%">Pemeriksa</th>
                             <th width="15%">Tinggi badan</th>
                             <th width="15%">Berat badan</th>
                             <th>Kategori</th>
-                            <th width="30%">Action</th>
+                            <th width="25%">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -64,7 +64,7 @@
                             <label class="col-form-label col-md-2" >Pilih siswa</label>
                             <div class="col-md-10">
                                 <select id="pilihSiswa" class="form-control" name="pilihSiswa" >
-                                    <option>Silahkan pilih siswa</option>                               
+                                    <option value="default">Silahkan pilih siswa</option>
                                 </select>
                             </div>
                         </div>
@@ -337,7 +337,6 @@
 @section('librariesJS')
 	<script src="{{ asset('limitless/global_assets/js/plugins/tables/datatables/datatables.min.js') }}"></script>
     <script src="{{ asset('limitless/global_assets/js/demo_pages/datatables_basic.js') }}"></script>
-	<script src="{{ asset('limitless/global_assets/js/plugins/forms/selects/select2.min.js') }}"></script>
     <script src="{{ asset('limitless/global_assets/js/plugins/notifications/sweet_alert.min.js') }}"></script>
     <script src="{{ asset('limitless/global_assets/js/plugins/forms/validation/validate.min.js') }}"></script>
 @endsection
@@ -356,10 +355,10 @@
                 "serverSide": true,
                 "ajax": {'url':"{{ url('detailPemeriksaanImtAjax',[$id,$sekolah->sekolah_id]) }}",
                         'headers':"{{ csrf_token() }}"},
-                "order": ['0', 'desc'],
                 "dataSrc": "data",
                 "columns": [
                     {data: 'siswa_id',name:'siswa_id'},
+                    {data: 'pemeriksa_id',name: 'pemeriksa_id'},
                     {data: 'tinggi_badan', name: 'tinggi_badan'},
                     {data: 'berat_badan',name:'berat_badan'},
                     {data: 'kategori',name:'kategori'},
@@ -381,12 +380,12 @@
                     },
                     success : function(response){
                         if(response.length > 0){
-                            $('#pilihSiswa').append('<option>Silahkan pilih siswa</option>')
+                            $('#pilihSiswa').append('<option value="default">Silahkan pilih siswa</option>')
                             for (let i = 0; i < response.length; i++) {
                                 $('#pilihSiswa').append('<option value='+response[i].siswa.siswa_id+'>'+response[i].siswa.nama+'</option>')
                             }
                         }else{
-                            $('#pilihSiswa').append('<option>Semua siswa di kelas ini sudah diperiksa</option>')
+                            $('#pilihSiswa').append('<option>Tidak terdapat siswa atau Semua siswa sudah diperiksa</option>')
                         }
                     }
                 })
@@ -399,7 +398,7 @@
                     url: '{{ url('detailSiswa') }}',
                     method: 'GET',
                     data : {
-                        id:id                   
+                        id:id
                     },
                     success : function(data){
                         $("#sekolah").val(data.kelas_mapping[0].kelas.sekolah.sekolah_name);
@@ -467,6 +466,9 @@
                 const siswaForm = $('#siswaForm');
                 siswaForm.validate({
                     errorClass: 'validation-invalid-label',
+                    errorPlacement: function(error,element){
+                    	error.appendTo(element.parents('.form-group'));
+                    },
                     highlight: function(element, errorClass) {
                         $(element).removeClass(errorClass);
                     },
@@ -487,7 +489,17 @@
                         $(element).removeClass(errorClass);
                     }
                 });
-                if (siswaForm.valid() && imtForm.valid()) {
+
+                const select = document.getElementById('pilihSiswa');
+                const selVal = select.options[select.selectedIndex].value;
+                if(selVal == "default"){
+                    swalInit({
+                        type: 'warning',
+                        title : "Silahkan pilih kelas dan siswa yang akan diperiksa",
+                    });
+                }
+
+                if (siswaForm.valid() && imtForm.valid() && selVal != "default") {
                     const form = document.querySelector('#imtForm');
                     const bb = document.querySelector(".bb").value;
                     const tb = document.querySelector(".tb").value;
@@ -521,6 +533,7 @@
                             _token: '{{ csrf_token() }}'
                         },
                         success: function(response){
+                            $("#pilihSiswa option").remove();
                             $("#imtForm")[0].reset();
                             $("#detailForm")[0].reset();
                             $("#siswaForm")[0].reset();
@@ -537,7 +550,7 @@
                             });
                         }
                     })
-                } 
+                }
             })
 
             $('.tbEdit, .bbEdit').on('keyup',function(){
@@ -608,14 +621,14 @@
                     if (rujukan == false) {
                         rbRujukan[0].checked= true;
                     }else{
-                        rbRujukan[1].checked= true; 
+                        rbRujukan[1].checked= true;
                     }
 
                     let rbVaksin = document.getElementsByName("vaksinEdit");
                     if (vaksin == false) {
                         rbVaksin[0].checked= true;
                     }else{
-                        rbVaksin[1].checked= true; 
+                        rbVaksin[1].checked= true;
                     }
 
                     if(data.rujukan == 1){
