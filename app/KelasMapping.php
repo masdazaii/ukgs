@@ -50,4 +50,9 @@ class KelasMapping extends Model
     {
         return $this->hasOne('App\Siswa','siswa_id','siswa_id');
     }
+
+    public function tahunAjaran()
+    {
+        return $this->hasOne('App\TahunAjaran','tahun_ajaran_id','tahun_pelajaran');
+    }
 }

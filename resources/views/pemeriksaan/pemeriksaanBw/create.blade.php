@@ -63,7 +63,7 @@
                             <label class="col-form-label col-md-2" >Pilih siswa</label>
                             <div class="col-md-10">
                                 <select id="pilihSiswa" class="form-control" name="pilihSiswa">
-                                    <option>Silahkan pilih siswa yang akan diperiksa</option>                               
+                                    <option value="default">Silahkan pilih siswa yang akan diperiksa</option>
                                 </select>
                             </div>
                         </div>
@@ -118,12 +118,12 @@
                 <h6>Soal ke-{{$i+1}}</h6>
                 <fieldset>
                     <div class="row">
-                        <div class="col-md-8 text-center" style="margin: 0 auto; float: none;">
+                        <div class="col-md-4 text-center" style="margin: 0 auto; float: none;">
                             <!-- Zooming -->
                             <div class="card">
                                 <input type="hidden" id="soal{{ $i }}" value="{{ $soalButaWarna[$i]->soal_buta_warna_id }}">
                                 <div class="card-img-actions">
-                                    <img class="card-img-top img-fluid" src="{{ '/'.$soalButaWarna[$i]->image }}">
+                                    <img class="card-img-top" src="{{ '/'.$soalButaWarna[$i]->image }}">
                                 </div>
 
                                 <div class="card-body">
@@ -131,7 +131,7 @@
                                     <p class="card-text">{{ $soalButaWarna[$i]->deskripsi }}</p>
                                     <div class="form-group">
                                         <label>Jawaban<span class="text-danger">*</span></label>
-                                        <input type="text" id="jawaban{{$i}}" class="form-control required">
+                                        <input type="number" id="jawaban{{$i}}" class="form-control required">
                                     </div>
                                 </div>
                             </div>
@@ -198,7 +198,7 @@
                                 $('#pilihSiswa').append('<option value='+response[i].siswa.siswa_id+'>'+response[i].siswa.nama+'</option>')
                             }
                         }else{
-                            $('#pilihSiswa').append('<option>Semua siswa di kelas ini sudah diperiksa</option>')
+                            $('#pilihSiswa').append('<option>Tidak terdapat siswa atau Semua siswa sudah diperiksa</option>')
                         }
                     }
                 })
@@ -255,9 +255,17 @@
                     return form.valid();
                 },
                 onFinishing: function (event, currentIndex) {
+                    const select = document.getElementById('pilihSiswa');
+                    const selVal = select.options[select.selectedIndex].value;
+                    if(selVal == "default"){
+                        swalInit({
+                            type: 'warning',
+                            title : "Silahkan pilih kelas dan siswa yang akan diperiksa",
+                        });
+                    }
+
                     const jumlahSoal = {{ count($soalButaWarna) }};
                     const alamat = '{{ route('pemeriksaanBw.store') }}';
-                    const token = document.querySelector('meta[name="csrf-token"]').content;
                     let hasilPemeriksaan = [];
                     for(let i = 0; i < jumlahSoal; i++)
                     {
@@ -266,20 +274,19 @@
                         hasilPemeriksaan[i] = {soalId,jawaban};
                     }
 
-                    if(hasilPemeriksaan[hasilPemeriksaan.length - 1].jawaban != null && hasilPemeriksaan[hasilPemeriksaan.length - 1].jawaban != ''){
+                    if(hasilPemeriksaan[hasilPemeriksaan.length - 1].jawaban != null && hasilPemeriksaan[hasilPemeriksaan.length - 1].jawaban != '' && selVal != "default"){
                         $.ajax({
                             url : alamat,
                             method : 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN':token
-                            },
                             data : {
                                 hasilPemeriksaan,
                                 jenisPemeriksaan: {{ $id }},
                                 siswaId:siswaId
                             },
                             success:function(response){
+                                $("#pilihSiswa option").remove();
                                 $('#detailForm')[0].reset();
+                                $("#bwForm")[0].reset();
                                 $('#siswaForm')[0].reset();
                                 $("#table").DataTable().ajax.reload();
                                 swalInit({
@@ -298,9 +305,6 @@
 
                     form.validate().settings.ignore = ':disabled';
                     return form.valid();
-                },
-                onFinished: function (event, currentIndex) {
-                    $("#bwForm")[0].reset();
                 }
             });
 
@@ -331,9 +335,6 @@
                     $.ajax({
                         url : alamat,
                         type: 'POST',
-                        headers :{
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                        },
                         data: {
                             _method: 'Delete'
                         },

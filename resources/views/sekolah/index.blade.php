@@ -26,7 +26,7 @@
                 <div class="col-md-6">
                     <div class="text-left">
                         <a type="button" class="btn btn-primary" href="#" data-toggle="modal" data-target="#modal_form_vertical_create"><i class="icon-plus22 mr-1"></i> Tambah data sekolah baru</a>
-                    </div>      
+                    </div>
                 </div>
                 <div class="col-md-6">
                     <div class="text-right">
@@ -74,7 +74,6 @@
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
                 <form id="createForm" action="" method="post" enctype="multipart/form-data">
-                    @csrf
                     <div class="modal-body">
                         <div class="form-group">
                             <label>NPSN :</label>
@@ -91,7 +90,7 @@
                                     </select>
                                 </div>
                                 <div class="col-md-9">
-                                    <input type="text" class="form-control" placeholder="Silahkan masukan nama sekolah" name="sekolahName" required> 
+                                    <input type="text" class="form-control" placeholder="Silahkan masukan nama sekolah" name="sekolahName" required>
                                 </div>
                             </div>
                         </div>
@@ -134,12 +133,11 @@
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
                 <form id="editForm" action="">
-                    @csrf
                     @method('PUT')
                     <div class="modal-body">
                         <div class="form-group">
                             <label>NPSN :</label>
-                            <input type="number" class="form-control" placeholder="Silahkan masukan NPSN sekolah" name="npsnEdit" required>
+                            <input type="number" class="form-control" placeholder="Silahkan masukan NPSN sekolah" minlength="8" maxlength="8" name="npsnEdit" required>
                         </div>
                         <div class="form-group">
                             <label>Nama Sekolah :</label>
@@ -152,14 +150,13 @@
                                     </select>
                                 </div>
                                 <div class="col-md-9">
-                                    <input type="text" class="form-control" placeholder="Silahkan masukan nama sekolah" name="sekolahNameEdit" required> 
+                                    <input type="text" class="form-control" placeholder="Silahkan masukan nama sekolah" name="sekolahNameEdit" required>
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
                             <label>Kelurahan :</label>
                             <select id="selectKelurahanEdit" class="form-control" name="kelurahanEdit" required>
-                                <option>Pilih Kelurahan</option>
                                 @for($i = 0;$i < count($kelurahan);$i++)
                                     <option value="{{ $kelurahan[$i]->kelurahan_id }}">{{ $kelurahan[$i]->kelurahan_name }}</option>
                                 @endfor
@@ -204,7 +201,6 @@
         });
 
 		$(document).ready(function() {
-            console.log("cek ready");
             $("#table").DataTable({
                 "destroy": true,
                 "processing": true,
@@ -253,9 +249,6 @@
                     $.ajax({
                         url: '{{ route('sekolah.store') }}',
                         method:'POST',
-                        headers:{
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                        },
                         data:{
                             npsn,
                             sekolahType,
@@ -266,6 +259,7 @@
                             kotaAdministrasi
                         },
                         success:function(response){
+                            createform[0].reset();
                             $("#table").DataTable().ajax.reload();
                             $('#modal_form_vertical_create').modal('hide');
                             swalInit({
@@ -298,17 +292,13 @@
 
                 if (editForm.valid()) {
                     const alamat = $("#editForm").attr('action');
-                    console.log(alamat);
                     const request = $(editForm).serialize();
                     $.ajax({
                         url: alamat,
                         method:'POST',
-                        headers:{
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                        },
                         data:request,
                         success:function(response){
-                            console.log(response);
+                            editForm[0].reset();
                             $("#table").DataTable().ajax.reload();
                             $('#modal_form_vertical_edit').modal('hide');
                             swalInit({
@@ -337,9 +327,9 @@
             },
             acceptedFiles: ".xls,.xlsx",
             success : function(file,response){
-                console.log(response);
                 $('#excelForm').toggle();
-                Swal.fire({
+                $("#table").DataTable().ajax.reload();
+                swalInit({
                     type: 'success',
                     title : 'Data dalam excel berhasil ditambahkan',
                 });
@@ -354,25 +344,20 @@
             editUrl = editUrl.replace(':id',id);
             let updateUrl = '{{ route('sekolah.update',':id') }}';
             updateUrl = updateUrl.replace(':id',id);
-            // console.log(editUrl);
-            console.log(updateUrl);
             $.ajax({
                 url: editUrl,
                 method:'GET',
-                headers:{
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
                 success:function(response){
                     for (let i = 0; i < sekolahTypeOptions.length; i++) {
-                        if (sekolahTypeOptions.options[i].value == response.sekolah_type) 
+                        if (sekolahTypeOptions.options[i].value == response.sekolah_type)
                         {
                             sekolahTypeOptions.selectedIndex = i;
                             break;
                         }
                     }
-                    // console.log(response.kelurahan);
+
                     for (let i = 0; i < kelurahanOptions.length; i++) {
-                        if (kelurahanOptions.options[i].value == response.kelurahan.kelurahan_id) 
+                        if (kelurahanOptions.options[i].value == response.kelurahan.kelurahan_id)
                         {
                             kelurahanOptions.selectedIndex = i;
                             break;
@@ -406,9 +391,6 @@
                     $.ajax({
                     url : alamat,
                     type: 'POST',
-                    headers:{
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
                     data: {
                         _method: 'Delete'
                     },

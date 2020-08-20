@@ -2,38 +2,30 @@
 
 namespace App\Helpers;
 
-use App\Sekolah;
-use App\Kelas;
-use App\KelasMapping;
-use App\Siswa;
+use App\TahunAjaran;
 use App\Pemeriksaan;
 use App\DetailPemeriksaanGigi;
 use App\DetailPemeriksaanImt;
 use App\DetailPemeriksaanSosial;
 use App\DetailPemeriksaanPtm;
-use App\DetailPemeriksaanBw;
+use App\KustomGambar;
 use Carbon\Carbon;
 
 class FunctionHelper
 {
 	public static function getTahunPelajaran()
 	{
-		$thisYear = 0;
-		$tempYear = 0;
-		$tahunPelajaran = 0;
-		if (date('m') > 6) {
-		 	$thisYear = date('Y');
-		 	$tempYear = date('Y')+1;
-		 	$tahunPelajaran =$thisYear.'/'.$tempYear;
-		}else{
-			$thisYear = date('Y');
-		 	$tempYear = date('Y')-1;
-		 	$tahunPelajaran =  $tempYear.'/'.$thisYear;
-		}
+        $tahunPelajaran = TahunAjaran::where('is_active',1)->select('tahun_ajaran_id')->first();
 
-		return $tahunPelajaran; 
+		return $tahunPelajaran->tahun_ajaran_id;
 	}
 
+    public static function getTahunPelajaranDate()
+	{
+        $tahunPelajaran = TahunAjaran::where('is_active',1)->select('tahun_ajaran')->first();
+
+		return $tahunPelajaran->tahun_ajaran;
+    }
 
 	public static function olahIndekKaries($collection)
 	{
@@ -97,7 +89,7 @@ class FunctionHelper
         ];
 
         for ($i=0; $i < count($collection); $i++) {
-            $calcTb = $collection[$i]->tinggi_badan/100; 
+            $calcTb = $collection[$i]->tinggi_badan/100;
             $calcImt = number_format($collection[$i]->berat_badan/($calcTb*$calcTb),1);
             if ($calcImt < 17) {
                 $result["sangatKurus"] += 1;
@@ -124,7 +116,7 @@ class FunctionHelper
             "narkoba" => 0
         ];
 
-        for ($i=0; $i < count($collection) ; $i++) { 
+        for ($i=0; $i < count($collection) ; $i++) {
             if ($collection[$i]->merokok == 1) {
                 $result["merokok"] += 1;
             }
@@ -151,7 +143,7 @@ class FunctionHelper
             "jelek" => 0
         ];
 
-        for ($i=0; $i < count($collection) ; $i++) { 
+        for ($i=0; $i < count($collection) ; $i++) {
             if ($collection[$i]->kesehatan_gusi == 0) {
                 $result["baik"] += 1;
             }elseif ($collection[$i]->kesehatan_gusi == 1) {
@@ -191,9 +183,11 @@ class FunctionHelper
         $data = [];
         for($i=0;$i< count($collection); $i++){
             if ($collection[$i]['jenis_pemeriksaan'] == 1) {
-                $deskripsi = DetailPemeriksaanGigi::where('pemeriksaan_gigi_id',$collection[$i]['pemeriksaan_id'])
+                $deskripsi = DetailPemeriksaanGigi::withTrashed()
+                            ->where('pemeriksaan_gigi_id',$collection[$i]['pemeriksaan_id'])
                             ->select('detail_pemeriksaan_gigi_id','pemeriksaan_gigi_id','exo_pers','fs','ohis','kesehatan_gusi','frekuensi_menyikat_gigi')
                             ->with(['indekKaries' => function($query){
+                                $query->withTrashed();
                                 $query->select('detail_pemeriksaan_gigi_id','posisi_gigi','keadaan_gigi');
                             }])
                             ->first();
@@ -222,7 +216,8 @@ class FunctionHelper
                 $collection[$i]['detail'] = $obj;
                 $data['pemeriksaangigi'] = $collection[$i]['detail'];
             }else if($collection[$i]['jenis_pemeriksaan'] == 2){
-                $deskripsi = DetailPemeriksaanImt::where('pemeriksaan_imt_id',$collection[$i]['pemeriksaan_id'])
+                $deskripsi = DetailPemeriksaanImt::withTrashed()
+                            ->where('pemeriksaan_imt_id',$collection[$i]['pemeriksaan_id'])
                             ->select('berat_badan','tinggi_badan','vaksin')
                             ->first();
                 $imt = round($deskripsi->berat_badan/(($deskripsi->tinggi_badan/100)*($deskripsi->tinggi_badan/100)),1);
@@ -242,21 +237,24 @@ class FunctionHelper
 
                 $data['pemeriksaanimt'] = $collection[$i]['detail'];
             }else if($collection[$i]['jenis_pemeriksaan'] == 3){
-                $deskripsi = DetailPemeriksaanSosial::where('pemeriksaan_sosial_id',$collection[$i]['pemeriksaan_id'])
+                $deskripsi = DetailPemeriksaanSosial::withTrashed()
+                            ->where('pemeriksaan_sosial_id',$collection[$i]['pemeriksaan_id'])
                             ->select('merokok','minum_alkohol','narkoba','free_sex')
                             ->first();
 
                 $collection[$i]['detail'] = $deskripsi;
                 $data['pemeriksaansosial'] = $collection[$i]['detail'];
             }else if($collection[$i]['jenis_pemeriksaan'] == 4){
-                $deskripsi = DetailPemeriksaanPtm::where('pemeriksaan_ptm_id',$collection[$i]['pemeriksaan_id'])
+                $deskripsi = DetailPemeriksaanPtm::withTrashed()
+                            ->where('pemeriksaan_ptm_id',$collection[$i]['pemeriksaan_id'])
                             ->select('tekanan_sistolik','tekanan_diastolik','nilai_gula_darah_sewaktu','lingkar_pinggang')
                             ->first();
 
                 $collection[$i]['detail'] = $deskripsi;
                 $data['pemeriksaanptm'] = $collection[$i]['detail'];
             }else if($collection[$i]['jenis_pemeriksaan'] == 5){
-                $deskripsi = Pemeriksaan::where('pemeriksaan_id',$collection[$i]['pemeriksaan_id'])
+                $deskripsi = Pemeriksaan::withTrashed()
+                            ->where('pemeriksaan_id',$collection[$i]['pemeriksaan_id'])
                             ->select('pemeriksaan_id','siswa_id','jenis_pemeriksaan','rujukan')
                             ->first();
                 $collection[$i]['detail'] = $deskripsi;
@@ -265,5 +263,21 @@ class FunctionHelper
         }
 
         return $data;
+    }
+
+    public static function getLoginLogoActive()
+    {
+        $gambarAktif = KustomGambar::where('is_active',true)
+                        ->first();
+        $loginLogoPath = $gambarAktif->logo_login;
+        return $loginLogoPath;
+    }
+
+    public static function getPanelLogoActive()
+    {
+        $gambarAktif = KustomGambar::where('is_active',true)
+                        ->first();
+        $panelLogoPath = $gambarAktif->logo_panel;
+        return $panelLogoPath;
     }
 }

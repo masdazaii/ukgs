@@ -3,16 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Siswa;
-use App\Sekolah;
 use App\Pemeriksaan;
 use App\DetailPemeriksaanSosial;
 use App\DetailRujukan;
+use App\Helpers\FunctionHelper;
 use Response;
 use Auth;
-use session;
 use DB;
-use URL;
 
 class PemeriksaanSosialController extends Controller
 {
@@ -33,20 +30,25 @@ class PemeriksaanSosialController extends Controller
 
     public function detailPemeriksaanSosialAjax($id,$sekolahId)
     {
-         $data = Pemeriksaan::where('jenis_pemeriksaan',$id)
+         $test = FunctionHelper::getTahunPelajaran();
+        //  return $test;
+         $data = Pemeriksaan::where('tahun_ajaran',FunctionHelper::getTahunPelajaran())
+                ->where('jenis_pemeriksaan',$id)
                 ->with('detailPemeriksaanSosial','pemeriksa', 'siswa')
                 ->whereHas('siswa', function($query) use ($sekolahId){
                     $query->whereHas('kelasMapping', function($query) use ($sekolahId){
+                        $query->where('tahun_pelajaran',FunctionHelper::getTahunPelajaran());
                         $query->whereHas('kelas', function($query) use ($sekolahId){
                             $query->where('sekolah_id',$sekolahId);
                         });
                     });
-                });
+                })
+                ->get();
 
                 // return $data;
 
         return datatables()->of($data)
-            ->addColumn('action',function($data) use ($id,$sekolahId){
+            ->addColumn('action',function($data){
                 $button = '';
                 $button .= '<a href="#" type="button" data-id="'.$data->pemeriksaan_id.'" class="btn btn-sm btn-warning edit">Edit</a>
                     <button data-id="'.$data->pemeriksaan_id.'" class="btn btn-danger btn-sm delete" ><i class="fas fa-trash mr-1 fa-1"></i>Delete</button>';
@@ -114,6 +116,7 @@ class PemeriksaanSosialController extends Controller
             $pemeriksaanSosial->pemeriksa_id = Auth::user()->id;
             $pemeriksaanSosial->siswa_id = $request->siswaId;
             $pemeriksaanSosial->jenis_pemeriksaan = $request->jenisPemeriksaan;
+            $pemeriksaanSosial->tahun_ajaran = FunctionHelper::getTahunPelajaran();
             $pemeriksaanSosial->rujukan = $request->rujukan;
             $pemeriksaanSosial->save();
 
@@ -125,7 +128,7 @@ class PemeriksaanSosialController extends Controller
                 if (isset($request->deskripsi)){
                     $rujukan->deskripsi = $request->deskripsi;
                 }
-                $rujukan->save(); 
+                $rujukan->save();
             }
 
             $detailPemeriksaanSosial = new DetailPemeriksaanSosial;
@@ -141,7 +144,7 @@ class PemeriksaanSosialController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
             return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
-        }  
+        }
     }
 
     /**

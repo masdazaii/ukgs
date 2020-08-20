@@ -16,7 +16,6 @@
                         <a href="{{ URL::to('/pemeriksaanPtm') }}" class="breadcrumb-item">Pemeriksaan Penyakit Tidak Menular</a>
 		        		<span class="breadcrumb-item active">Create</span>
 		      		</div>
-		      		<a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
 		    	</div>
 		  	</div>
 		</div>
@@ -24,6 +23,7 @@
 
 	<div class="card">
         <div class="card-body">
+            <h4><span class="font-weight-semibold">Hasil Pemeriksaan Penyakit Tidak Menular {{ $sekolah->sekolah_name }}</span></h4>
             <div class="table-responsive">
                 <table class="table table-striped" id="table">
                     <thead>
@@ -65,7 +65,7 @@
                             <label class="col-form-label col-md-2" >Pilih siswa</label>
                             <div class="col-md-10">
                                 <select id="pilihSiswa" class="form-control" name="pilihSiswa">
-                                    <option>Silahkan pilih siswa yang akan diperiksa</option>                               
+                                    <option value="default">Silahkan pilih siswa yang akan diperiksa</option>
                                 </select>
                             </div>
                         </div>
@@ -104,27 +104,27 @@
     </div>
     <div class="card">
         <div class="card-body">
-            <h4><span class="font-weight-semibold">Hasil Pemeriksaan Penyakit Tidak Menular {{ $sekolah->sekolah_name }}</span></h4>
+            <h4><span class="font-weight-semibold">Pemeriksaan Penyakit Tidak Menular</span></h4>
             <form id="ptmForm" action="">
                 <div class="form-group row">
                     <div class="col-md-4">
                         <label class="d-block font-weight-semibold">Tekanan Darah</label>
                         <div class="row">
                             <div class="col-sm-6">
-                                <input type="text" placeholder="Sistolik" class="form-control" name="sistolik" required>
+                                <input type="number" placeholder="Sistolik" class="form-control" name="sistolik" required>
                             </div>
                             <div class="col-sm-6">
-                                <input type="text" placeholder="Diastolik" class="form-control" name="diastolik" required>
+                                <input type="number" placeholder="Diastolik" class="form-control" name="diastolik" required>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <label class="d-block font-weight-semibold">Lingkar Pinggang</label>
-                        <input type="text" placeholder="Lingkar Pinggang" class="form-control" name="lingkarPinggang" required>
+                        <input type="number" placeholder="Lingkar Pinggang" class="form-control" name="lingkarPinggang" required>
                     </div>
                     <div class="col-md-4">
                         <label class="d-block font-weight-semibold">Nilai gula darah sewaktu</label>
-                        <input type="text" placeholder="Nilai Gula darah" class="form-control" name="gulaDarah" required>
+                        <input type="number" placeholder="Nilai Gula darah" class="form-control" name="gulaDarah" required>
                     </div>
                 </div>
                 <div class="form-group">
@@ -163,28 +163,26 @@
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
                 <form id="editForm" action="" method="post" enctype="multipart/form-data">
-                    @csrf
-                    {{ method_field('PUT') }}
                     <div class="modal-body">
                         <div class="form-group row">
                             <div class="col-md-4">
                                 <label class="d-block font-weight-semibold">Tekanan Darah</label>
                                 <div class="row">
                                     <div class="col-sm-6">
-                                        <input id="sistolikEdit" type="text" placeholder="Sistolik" class="form-control" name="sistolik" required>
+                                        <input id="sistolikEdit" type="number" placeholder="Sistolik" class="form-control" name="sistolik" required>
                                     </div>
                                     <div class="col-sm-6">
-                                        <input id="diastolikEdit" type="text" placeholder="Diastolik" class="form-control" name="diastolik" required>
+                                        <input id="diastolikEdit" type="number" placeholder="Diastolik" class="form-control" name="diastolik" required>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <label class="d-block font-weight-semibold">Lingkar Pinggang</label>
-                                <input id="lingkarPinggangEdit" type="text" placeholder="Lingkar Pinggang" class="form-control" name="lingkarPinggang" required>
+                                <input id="lingkarPinggangEdit" type="number" placeholder="Lingkar Pinggang" class="form-control" name="lingkarPinggang" required>
                             </div>
                             <div class="col-md-4">
                                 <label class="d-block font-weight-semibold">Nilai gula darah sewaktu</label>
-                                <input id="gulaDarahEdit" type="text" placeholder="Nilai Gula darah" class="form-control" name="gulaDarah" required>
+                                <input id="gulaDarahEdit" type="number" placeholder="Nilai Gula darah" class="form-control" name="gulaDarah" required>
                             </div>
                         </div>
                         <div class="form-group">
@@ -264,12 +262,12 @@
                     },
                     success : function(response){
                         if(response.length > 0){
-                            $('#pilihSiswa').append('<option>Silahkan pilih siswa</option>')
+                            $('#pilihSiswa').append('<option value="default">Silahkan pilih siswa</option>')
                             for (let i = 0; i < response.length; i++) {
                                 $('#pilihSiswa').append('<option value='+response[i].siswa.siswa_id+'>'+response[i].siswa.nama+'</option>')
                             }
                         }else{
-                            $('#pilihSiswa').append('<option>Semua siswa di kelas ini sudah diperiksa</option>')
+                            $('#pilihSiswa').append('<option>Tidak terdapat siswa atau Semua siswa sudah diperiksa</option>')
                         }
                     }
                 })
@@ -323,6 +321,9 @@
                 const siswaForm = $('#siswaForm');
                 siswaForm.validate({
                     errorClass: 'validation-invalid-label',
+                    errorPlacement: function(error,element){
+                    	error.appendTo(element.parents('.form-group'));
+                    },
                     highlight: function(element, errorClass) {
                         $(element).removeClass(errorClass);
                     },
@@ -333,6 +334,9 @@
                 const ptmForm = $('#ptmForm');
                 ptmForm.validate({
                     errorClass: 'validation-invalid-label',
+                    errorPlacement: function(error,element){
+                    	error.appendTo(element.parents('.form-group'));
+                    },
                     highlight: function(element, errorClass) {
                         $(element).removeClass(errorClass);
                     },
@@ -340,7 +344,17 @@
                         $(element).removeClass(errorClass);
                     }
                 });
-                if (siswaForm.valid() && ptmForm.valid()) {
+
+                const select = document.getElementById('pilihSiswa');
+                const selVal = select.options[select.selectedIndex].value;
+                if(selVal == "default"){
+                    swalInit({
+                        type: 'warning',
+                        title : "Silahkan pilih kelas dan siswa yang akan diperiksa",
+                    });
+                }
+
+                if (siswaForm.valid() && ptmForm.valid() && selVal != "default") {
                     const request = $('#ptmForm').serializeArray();
                     request.push({name:"jenisPemeriksaan", value:'{{ $id }}'});
                     request.push({name:"_token",value: document.querySelector('meta[name="csrf-token"]').content});
@@ -350,6 +364,7 @@
                         method : 'POST',
                         data :request,
                         success: function(response){
+                            $("#pilihSiswa option").remove();
                             $("#table").DataTable().ajax.reload();
                             ptmForm[0].reset();
                             siswaForm[0].reset();
@@ -366,7 +381,7 @@
                             });
                         }
                     })
-                } 
+                }
             })
         });
 
@@ -394,7 +409,7 @@
                     if (rujukan == false) {
                         rbRujukan[0].checked= true;
                     }else{
-                        rbRujukan[1].checked= true; 
+                        rbRujukan[1].checked= true;
                     }
 
                     let textarea = document.getElementById('deskripsiEdit');
@@ -425,7 +440,6 @@
             if (editForm.valid()) {
                 const request = $('#editForm').serializeArray();
                 request.push({name:"deskripsi",value: document.getElementById('deskripsiEdit').value});
-                request.push({name:"_token",value: document.querySelector('meta[name="csrf-token"]').content});
                 request.push({name:"_method",value:"PUT"});
                 const alamat = $('#editForm').attr('action');
                 $.ajax({

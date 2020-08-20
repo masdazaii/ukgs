@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use DB;
+use Response;
 use App\Siswa;
 use App\KelasMapping;
 use App\Helpers\FunctionHelper;
@@ -35,7 +36,7 @@ class SiswaImport implements ToCollection,WithHeadingRow
                 $siswa->jenis_kelamin = $row['jenis_kelamin'];
                 $siswa->tempat_lahir = $row['tempat_lahir'];
                 $siswa->tanggal_lahir = date("Y-m-d",($row['tanggal_lahir']-25569)*86400);
-                $siswa->usia = (date('Y') - date('Y',strtotime($row['tanggal_lahir'])));
+                $siswa->usia = date_diff(date_create($siswa->tanggal_lahir), date_create('today'))->y;
                 $siswa->agama = $row['agama'];
                 $siswa->nama_orang_tua = $row['nama_orang_tua'];
                 $siswa->alamat = $row['alamat'];

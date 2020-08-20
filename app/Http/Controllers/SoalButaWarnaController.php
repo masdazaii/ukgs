@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\SoalButaWarna;
+use Validator;
 use Response;
-use Session;
-use URL;
+use Image;
 use DB;
 use File;
 
@@ -53,11 +53,15 @@ class SoalButaWarnaController extends Controller
      */
     public function store(Request $request)
     {
-        $this->validate($request,[
+        $validator = Validator::make($request->all(),[
             'deskripsi' => 'required',
             'jawabanBenar' =>'required',
             'file' =>'required|mimes: jpg,jpeg,png'
         ]);
+
+        if($validator->fails()){
+            return Response::json($validator->messages(),422);
+        }
 
         DB::beginTransaction();
         try {
@@ -68,7 +72,11 @@ class SoalButaWarnaController extends Controller
             $file = $request->file('file');
             $fileName = time().'_' .uniqid().'.'. $file->getClientOriginalExtension();
             $imagePath = public_path().'/upload/image/';
-            $file->move($imagePath,$fileName);
+            $fixImage = Image::make($file)->fit(200,200,function($constraint){
+                $constraint->upSize();
+                $constraint->aspectRatio();
+            });
+            $fixImage->save($imagePath.$fileName,100);
             $soalButaWarna->image = 'upload/image/'.$fileName;
             $soalButaWarna->save();
             DB::commit();
@@ -102,10 +110,14 @@ class SoalButaWarnaController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this->validate($request,[
+        $validator = Validator::make($request->all(),[
             'deskripsi' => 'required',
             'jawabanBenar' =>'required',
         ]);
+
+        if($validator->fails()){
+            return Response::json($validator->messages(),422);
+        }
 
         DB::beginTransaction();
         try {
@@ -122,7 +134,11 @@ class SoalButaWarnaController extends Controller
                 $file = $request->file('file');
                 $fileName = time().'_' .uniqid().'.'. $file->getClientOriginalExtension();
                 $imagePath = public_path().'/upload/image/';
-                $file->move($imagePath,$fileName);
+                $image = Image::make($file)->fit(200,200, function($constraint){
+                    $constraint->aspectRatio();
+                    $constraint->upSize();
+                });
+                $image->save($imagePath.$fileName,100);
                 $soalButaWarna->image = 'upload/image/'.$fileName;
             }
             

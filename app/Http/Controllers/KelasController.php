@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Kelas;
 use DB;
-use session;
+use Validator;
 use URL;
 use Excel;
 use App\Imports\KelasImport;
@@ -43,10 +43,14 @@ class KelasController extends Controller
 
     public function importExcelKelas(Request $request)
     {
-        $this->validate($request,[
+        $validator = Validator::make($request->all(),[
             'file' => 'required|file|mimes:xls,xlsx'
         ]);
-        
+
+        if($validator->fails()){
+            return Response::json($validator->messages(),422);
+        }
+
         try {
             $sekolahId = $request->sekolahId;
             $file = $request->File('file');
@@ -69,10 +73,14 @@ class KelasController extends Controller
 
     public function store(Request $request)
     {
-        $this->validate($request,[
+        $validator = Validator::make($request->all(),[
             'sekolahId' => 'required',
             'kelasName' => 'required|string'
         ]);
+
+        if($validator->fails()){
+            return Response::json($validator->messages(),422);
+        }
 
         DB::beginTransaction();
         try {
@@ -112,9 +120,13 @@ class KelasController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this->validate($request,[
+        $validator = Validator::make($request->all(),[
             'kelasName' => 'required|string'
         ]);
+
+        if($validator->fails()){
+            return Response::json($validator->messages(),422);
+        }
 
         DB::beginTransaction();
         try {

@@ -18,7 +18,7 @@
 		  	</div>
 		</div>
 	{{-- End Breadcrumb --}}
-	
+
 	<div class="card">
         <div class="card-header">
         	<h4><span class="font-weight-semibold">Hasil Pemeriksaan Gigi {{ $sekolah->sekolah_name }}</span></h4>
@@ -64,7 +64,7 @@
 							<label class="col-form-label col-md-2" >Pilih siswa</label>
 							<div class="col-md-10">
 								<select id="pilihSiswa" class="form-control" name="pilihSiswa" >
-									<option>Silahkan pilih siswa</option>								
+									<option value="default">Silahkan pilih siswa</option>
 								</select>
 							</div>
 						</div>
@@ -388,14 +388,14 @@
 					<div class="col-md-9">
 						<table class="table table-responsive">
 							<tr>
-								<input class="col-sm-4 debris_kalkulus" name="debris1" required>
-								<input class="col-sm-4 debris_kalkulus" name="debris2" required>
-								<input class="col-sm-4 debris_kalkulus" name="debris3" required>
+								<input type="number" min="0" max="6" class="col-sm-4 debris_kalkulus" name="debris1" required>
+								<input type="number" min="0" max="6" class="col-sm-4 debris_kalkulus" name="debris2" required>
+								<input type="number" min="0" max="6" class="col-sm-4 debris_kalkulus" name="debris3" required>
 							</tr>
 							<tr>
-								<input class="col-sm-4 debris_kalkulus" name="debris4" required>
-								<input class="col-sm-4 debris_kalkulus" name="debris5" required>
-								<input class="col-sm-4 debris_kalkulus" name="debris6" required>
+								<input type="number" min="0" max="6" class="col-sm-4 debris_kalkulus" name="debris4" required>
+								<input type="number" min="0" max="6" class="col-sm-4 debris_kalkulus" name="debris5" required>
+								<input type="number" min="0" max="6" class="col-sm-4 debris_kalkulus" name="debris6" required>
 							</tr>
 						</table>
 					</div>
@@ -405,14 +405,14 @@
 					<div class="col-md-9">
 						<table class="table table-responsive">
 							<tr>
-								<input class="col-md-4 debris_kalkulus" name="kalkulus1" required>
-								<input class="col-md-4 debris_kalkulus" name="kalkulus2" required>
-								<input class="col-md-4 debris_kalkulus" name="kalkulus3" required>
+								<input type="number" min="0" max="6" class="col-md-4 debris_kalkulus" name="kalkulus1" required>
+								<input type="number" min="0" max="6" class="col-md-4 debris_kalkulus" name="kalkulus2" required>
+								<input type="number" min="0" max="6" class="col-md-4 debris_kalkulus" name="kalkulus3" required>
 							</tr>
 							<tr>
-								<input class="col-md-4 debris_kalkulus" name="kalkulus4" required>
-								<input class="col-md-4 debris_kalkulus" name="kalkulus5" required>
-								<input class="col-md-4 debris_kalkulus" name="kalkulus6" required>
+								<input type="number" min="0" max="6" class="col-md-4 debris_kalkulus" name="kalkulus4" required>
+								<input type="number" min="0" max="6" class="col-md-4 debris_kalkulus" name="kalkulus5" required>
+								<input type="number" min="0" max="6" class="col-md-4 debris_kalkulus" name="kalkulus6" required>
 							</tr>
 						</table>
 					</div>
@@ -453,7 +453,7 @@
 					<h5 class="no-margin-bottom">Kasus Gigi dan Mulut</h5>
 				</div>
 			</div>
-		</div> --}}{{-- 
+		</div> --}}{{--
 		<div class="card-body">
 			<div class="container-fluid">
 				<div class="row">
@@ -665,17 +665,16 @@
                    				<td id="fs"></td>
 							</tr>
 						</tbody>
-					</table>
+                    </table>
+                    <div class="text-right mt-2">
+                        <label>Tanggal Pemeriksaan : </label><span id="tanggalPeriksa" class="badge badge-info"></span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 @endsection
 @section('librariesJS')
-	<script src="{{ asset('limitless/global_assets/js/plugins/extensions/jquery_ui/interactions.min.js') }}"></script>
-	<script src="{{ asset('limitless/global_assets/js/plugins/forms/selects/select2.min.js') }}"></script>
-	<script src="{{ asset('limitless/global_assets/js/demo_pages/form_select2.js') }}"></script>
-	<script src="{{ asset('limitless/global_assets/js/demo_pages/form_checkboxes_radios.js') }}"></script>
 	<script src="{{ asset('limitless/global_assets/js/plugins/tables/datatables/datatables.min.js') }}"></script>
 	<script src="{{ asset('limitless/global_assets/js/demo_pages/datatables_basic.js') }}"></script>
 	<script src="{{ asset('limitless/global_assets/js/plugins/notifications/sweet_alert.min.js') }}"></script>
@@ -696,7 +695,6 @@
                 "serverSide": true,
                 "ajax": {'url':"{{ url('detailPemeriksaanGigiAjax/'.$id.'/'.$sekolah->sekolah_id) }}",
                         'headers':"{{ csrf_token() }}"},
-                "order": ['0', 'desc'],
                 "dataSrc": "data",
                 "columns": [
                 	{data: 'siswa_id', name:'siswa_id'},
@@ -721,12 +719,12 @@
 					},
 					success : function(response){
 						if(response.length > 0){
-							$('#pilihSiswa').append('<option>Silahkan pilih siswa</option>')
+							$('#pilihSiswa').append('<option value="default">Silahkan pilih siswa</option>')
 							for (let i = 0; i < response.length; i++) {
 								$('#pilihSiswa').append('<option value='+response[i].siswa.siswa_id+'>'+response[i].siswa.nama+'</option>')
 							}
 						}else{
-							$('#pilihSiswa').append('<option>Semua siswa di kelas ini sudah diperiksa</option>')
+							$('#pilihSiswa').append('<option>Tidak terdapat siswa atau Semua siswa sudah diperiksa</option>')
 						}
 					}
 				})
@@ -758,7 +756,7 @@
 			let fs = [];
 
 			let name = [];
-			let value = []; 
+			let value = [];
 			$(".gigi_dewasa").on('change',function(){
 				const attrName = $(this).attr('name');
 				const attrValue = $(this).val();
@@ -769,7 +767,7 @@
 						name.splice(index,1);
 						value.splice(index,1);
 					}else{
-						value[index] = attrValue;	
+						value[index] = attrValue;
 					}
 				}else{
 					name.push(attrName);
@@ -794,7 +792,7 @@
 				let dmf = D+M+F;
 				fs["dmf"] = dmf;
 
-				if (fs["dmf"] > 1 && fs["def"] > 4){
+				if (fs["dmf"] > 1 || fs["def"] > 4){
 					$('.fsPlus').prop('checked',true);
 				} else {
 					$('.fsMinus').prop('checked',true);
@@ -819,7 +817,7 @@
 						nameGigiSulung.splice(index,1);
 						valueGigiSulung.splice(index,1);
 					}else{
-						valueGigiSulung[index] = attrValue;	
+						valueGigiSulung[index] = attrValue;
 					}
 				}else{
 					nameGigiSulung.push(attrName);
@@ -844,7 +842,7 @@
 				let def = D+E+F;
 				fs["def"] = def;
 
-				if (fs["dmf"] > 1 && fs["def"] > 4){
+				if (fs["dmf"] > 1 || fs["def"] > 4){
 					$('.fsPlus').prop('checked',true);
 				} else {
 					$('.fsMinus').prop('checked',true);
@@ -865,7 +863,7 @@
 				const name = $(this).attr('name');
 				const value = $(this).val();
 				let jumlah = 0;
-				
+
 				if(indeksName.includes(name) == true){
 					const index = indeksName.indexOf(name);
 					indeksValue[index] = value;
@@ -913,7 +911,7 @@
                 }
             })
 
-			$('#pemeriksaanGigiSubmit').on('click',function(){
+			$('#pemeriksaanGigiSubmit').on('click',function(e){
 				const siswaForm = $('#siswaForm');
                 siswaForm.validate({
                     errorClass: 'validation-invalid-label',
@@ -938,10 +936,19 @@
                     }
                 });
 
-				if(createForm.valid()&&siswaForm.valid()){
+                const select = document.getElementById('pilihSiswa');
+                const selVal = select.options[select.selectedIndex].value;
+                if(selVal == "default"){
+                    swalInit({
+                        type: 'warning',
+                        title : "Silahkan pilih kelas dan siswa yang akan diperiksa",
+                    });
+                }
+
+                if(createForm.valid()&&siswaForm.valid()&&selVal != "default"){
 					const jenisPemeriksaan = $('input[name="jenisPemeriksaan"]').val();
 					const exoPers = $('input[name="exoPers"]').val();
-					const fs = $('input[name="fs"]').val();
+					const fsVal = $('input[name="fs"]').val();
 					const debris1 = $('input[name="debris1"]').val();
 					const debris2 = $('input[name="debris2"]').val();
 					const debris3 = $('input[name="debris3"]').val();
@@ -960,7 +967,7 @@
 					const rujukan = $('input[name="rujukan"]:checked').val();
 					const alamat = $('#pemeriksaanGigiForm').attr('action');
 					const deskripsi = $('#deskripsi').val();
-					
+
 					//convert array to json
 					let gigiJson = [];
 					for(var i = 0; i  < name.length;i++)
@@ -985,7 +992,7 @@
 						data : {
 							jenisPemeriksaan : jenisPemeriksaan,
 							exoPers : exoPers,
-							fs : fs,
+							fs : fsVal,
 							debris1 : debris1,
 							debris2 : debris2,
 							debris3 : debris3,
@@ -1003,10 +1010,15 @@
 							menyikatGigi : menyikatGigi,
 							rujukan : rujukan,
 							deskripsi: deskripsi,
-							gigiJson: gigiJson,
-							_token: '{{ csrf_token() }}'
+							gigiJson: gigiJson
 						},
 						success : function(response){
+                            fs = [];
+                            name = [];
+                            value = [];
+                            nameGigiSulung = [];
+                            valueGigiSulung = [];
+                            $("#pilihSiswa option").remove();
 							siswaForm[0].reset();
                             createForm[0].reset();
                             $("#detailForm")[0].reset();
@@ -1032,7 +1044,7 @@
 			const pemeriksaanId = $(this).data("idpemeriksaangigi");
 			let alamat = '{{ route('pemeriksaanGigi.destroy',':id') }}';
 			alamat = alamat.replace(':id',pemeriksaanId);
-			
+
 			swalInit({
 				title: 'Apakah anda yakin ingin menghapus data ini ?',
 				type: "warning",
@@ -1044,7 +1056,6 @@
 						url : alamat,
 						type: 'POST',
 			            data: {
-			                _token:'{{ csrf_token() }}',
 			                _method: 'Delete'
 			            },
 			            success : function(response){
@@ -1112,7 +1123,11 @@
 	            		fs.innerText = "+";
 	            	}else{
 	            		fs.innerText = "-";
-	            	}
+                    }
+
+                    let tanggalPemeriksaan = document.getElementById('tanggalPeriksa');
+                    tanggalPeriksa.innerText = response.created_at.toLocaleString();
+
                     $('#modal_form_vertical_show').modal('show');
                 },
                 error:function(xhr,status,error){
