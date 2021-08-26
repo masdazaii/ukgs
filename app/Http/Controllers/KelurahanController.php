@@ -3,10 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use session;
 use DB;
-use URL;
 use Response;
+use Validator;
 use App\Kelurahan;
 
 class KelurahanController extends Controller
@@ -48,9 +47,13 @@ class KelurahanController extends Controller
      */
     public function store(Request $request)
     {
-        $this->validate($request,[
+        $validator = Validator::make($request->all(),[
             'kelurahanName' => 'required'
         ]);
+
+        if($validator->fails()){
+            return Response::json($validator->messages(),422);
+        }
 
         DB::beginTransaction();
         try {
@@ -61,7 +64,7 @@ class KelurahanController extends Controller
             return Response::json('Data kelurahan berhasil ditambahkan',200);
         } catch (\Exception $e) {
             DB::rollback();
-            return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);   
+            return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
         }
     }
 
@@ -93,9 +96,13 @@ class KelurahanController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this->validate($request,[
+        $validator = Validator::make($request->all(),[
             'kelurahanName' => 'required'
         ]);
+
+        if($validator->fails()){
+            return Response::json($validator->messages(),422);
+        }
 
         DB::beginTransaction();
         try {

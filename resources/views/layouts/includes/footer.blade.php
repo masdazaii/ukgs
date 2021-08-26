@@ -8,7 +8,7 @@
 
   <div class="navbar-collapse collapse" id="navbar-footer">
     <span class="navbar-text">
-      &copy; 2020. <a href="#">UKSGS</a> by <a href="http://github.com/masdazai" target="_blank">Anggit Prayoga</a>
+      &copy; 2020. <span>UKGS</span>
     </span>
   </div>
 </div>

@@ -4,13 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\helpers\FunctionHelper;
-use App\Pemeriksaan;
 use App\Sekolah;
 use App\Kelas;
 use App\Siswa;
 use App\KelasMapping;
 use App\SoalButaWarna;
-use Response;
 use URL;
 
 class PemeriksaanController extends Controller
@@ -23,13 +21,13 @@ class PemeriksaanController extends Controller
     
     public function pemeriksaanSekolahAjax($id)
     {
-    	$data = null;
+        $data = null;
     	if ($id == 1 || $id == 2 || $id == 5) {
     		$data = Sekolah::all();
     	}else{
-    		$data = Sekolah::where('sekolah_type',['SMP','SMA']);
-    	}
-        
+            $data = Sekolah::whereIn('sekolah_type',['SMA','SMP'])
+                    ->get();
+        }
 
         return datatables()->of($data)
         ->addColumn('action',function($data) use ($id){
@@ -88,7 +86,7 @@ class PemeriksaanController extends Controller
         $sekolah = Sekolah::select('sekolah_name','sekolah_id')
                     ->findOrFail($sekolahId);
 
-        return view('pemeriksaan.pemeriksaanPtm.create',compact('kelas','id','sekolah'));    	
+        return view('pemeriksaan.pemeriksaanPtm.create',compact('kelas','id','sekolah'));
     }
 
     public function pemeriksaanSosial($id,$sekolahId)

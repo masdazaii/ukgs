@@ -16,7 +16,6 @@
                         <a href="{{ URL::to('/sekolah') }}" class="breadcrumb-item"></i> Sekolah</a>
 		        		<span class="breadcrumb-item active">Kelas</span>
 		      		</div>
-		      		<a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
 		    	</div>
 		  	</div>
 		</div>
@@ -28,12 +27,12 @@
                 <div class="col-md-6">
                     <div class="text-left">
                         <button class="btn btn-primary" data-toggle="modal" data-target="#modal_form_vertical">Tambah kelas baru</button>
-                    </div>      
+                    </div>
                 </div>
                 <div class="col-md-6">
                     <div class="text-right">
                         <button id="excel" class="btn btn-success"><i class="icon-file-excel mr-1"></i>Input Kelas dengan excel</button>
-                    </div>  
+                    </div>
                 </div>
             </div>
             <div id="excelForm" class="card mt-3" style="display: none;">
@@ -72,7 +71,6 @@
                 </div>
 
                 <form id="createForm" action="" method="post" enctype="multipart/form-data">
-                    @csrf
                     <div class="modal-body">
                         <div class="form-group">
                             <label>Nama Kelas</label>
@@ -95,12 +93,11 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Tambah Kelas</h5>
+                    <h5 class="modal-title">Edit Kelas</h5>
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
 
                 <form id="editForm" action="" method="post" enctype="multipart/form-data">
-                    @csrf
                     {{ method_field('PUT') }}
                     <div class="modal-body">
                         <div class="form-group">
@@ -135,7 +132,6 @@
         });
 
 		$(document).ready(function() {
-            console.log("bangsat");
             $("#table").DataTable({
                 "destroy": true,
                 "processing": true,
@@ -176,7 +172,8 @@
                         method: 'POST',
                         data: request,
                         success:function(response){
-                            $("#table").DataTable().ajax.reload();
+                            createForm[0].reset();
+                            $("#table").DataTable().ajax.reload(null,false);
                             $('#modal_form_vertical').modal('hide');
                             swalInit({
                                 type: 'success',
@@ -213,7 +210,7 @@
                         method: 'POST',
                         data: request,
                         success:function(response){
-                            $("#table").DataTable().ajax.reload();
+                            $("#table").DataTable().ajax.reload(null,false);
                             $('#modal_form_vertical_edit').modal('hide');
                             swalInit({
                                 type: 'success',
@@ -231,7 +228,7 @@
             })
         });
 
-        Dropzone.options.dropzone = {   
+        Dropzone.options.dropzone = {
             url : '{{ url('importExcelKelas') }}',
             params : {'sekolahId':'{{ $sekolah->sekolah_id }}' },
             renameFile: function(file){
@@ -248,10 +245,10 @@
                     title : response,
                 });
             },
-            error: function(xhr){
+            error: function(){
                 swalInit({
                     type: 'error',
-                    title : xhr.responseText,
+                    title : "terdapat kesalahan, pastikan file telah sesuai dengan ketentuan",
                 });
             }
         }
@@ -300,7 +297,7 @@
                             _method: 'Delete'
                         },
                         success: function(response){
-                            $("#table").DataTable().ajax.reload();
+                            $("#table").DataTable().ajax.reload(null,false);
                             swalInit({
                                 type: 'success',
                                 title : response,

@@ -54,7 +54,7 @@
                     <div class="modal-body">
                         <div class="form-group">
                             <label>Nama Kelurahan</label>
-                            <input id="kelurahanName" type="text" placeholder="Silahkan masukan nama kelurahan" class="form-control" name="kelurahanName">
+                            <input id="kelurahanName" type="text" placeholder="Silahkan masukan nama kelurahan" class="form-control" name="kelurahanName" required>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -81,7 +81,7 @@
                     <div class="modal-body">
                         <div class="form-group">
                             <label>Nama kelurahan</label>
-                            <input id="kelurahanNameEdit" type="text" placeholder="Silahkan masukan nama kelurahan" class="form-control" name="kelurahanName">
+                            <input id="kelurahanNameEdit" type="text" placeholder="Silahkan masukan nama kelurahan" class="form-control" name="kelurahanName" required>
                         </div>
                     </div>
 
@@ -97,10 +97,9 @@
 @endsection
 @section('librariesJS')
 	<script type="text/javascript" src="{{ asset('limitless/global_assets/js/plugins/tables/datatables/datatables.min.js') }}"></script>
-	<script type="text/javascript" src="{{ asset('limitless/global_assets/js/plugins/forms/selects/select2.min.js') }}"></script>
 	<script type="text/javascript" src="{{ asset('limitless/global_assets/js/demo_pages/datatables_basic.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('limitless/global_assets/js/demo_pages/components_dropdowns.js') }}"></script>
     <script src="{{ asset('limitless/global_assets/js/plugins/notifications/sweet_alert.min.js') }}"></script>
+    <script src="{{ asset('limitless/global_assets/js/plugins/forms/validation/validate.min.js') }}"></script>
 @endsection
 @section('script')
 	<script>
@@ -128,29 +127,42 @@
         });
 
         $(document).on('click','.submit',function(){
-            const kelurahanName = $('#kelurahanName').val();
-            $.ajax({
-                url : '{{ route('kelurahan.store') }}',
-                method : 'POST',
-                data: {
-                    kelurahanName:kelurahanName,
-                    _token: '{{ csrf_token() }}'
+            const createForm = $('#createForm');
+            createForm.validate({
+                errorClass: 'validation-invalid-label',
+                highlight: function(element, errorClass) {
+                    $(element).removeClass(errorClass);
                 },
-                success:function(response){
-                    $('#modal_form_vertical').modal('hide');
-                    $("#table").DataTable().ajax.reload();
-                    swalInit({
-                        type: 'success',
-                        title : response,
-                    });
-                },
-                error: function(xhr){
-                    swalInit({
-                        type: 'error',
-                        title : xhr.responseText,
-                    });
+                unhighlight: function(element, errorClass) {
+                    $(element).removeClass(errorClass);
                 }
-            })
+            });
+
+            if(createForm.valid()){
+                const kelurahanName = $('#kelurahanName').val();
+                $.ajax({
+                    url : '{{ route('kelurahan.store') }}',
+                    method : 'POST',
+                    data: {
+                        kelurahanName:kelurahanName,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success:function(response){
+                        $('#modal_form_vertical').modal('hide');
+                        $("#table").DataTable().ajax.reload();
+                        swalInit({
+                            type: 'success',
+                            title : response,
+                        });
+                    },
+                    error: function(xhr){
+                        swalInit({
+                            type: 'error',
+                            title : xhr.responseText,
+                        });
+                    }
+                })
+            }
         })
 
         $(document).on('click','.edit',function(){
@@ -172,31 +184,45 @@
         });
 
         $(document).on('click','.editSubmit',function(){
-            const kelurahanNameEdit = $('#kelurahanNameEdit').val();
-            const alamat = $('#editForm').attr('action');
-            $.ajax({
-                url : alamat,
-                type: 'POST',
-                data: {
-                    kelurahanName:kelurahanNameEdit,
-                    _token: '{{ csrf_token() }}',
-                    _method: 'PUT'
+            const editForm = $('#editForm');
+
+            editForm.validate({
+                errorClass: 'validation-invalid-label',
+                highlight: function(element, errorClass) {
+                    $(element).removeClass(errorClass);
                 },
-                success:function(response){
-                    $('#modal_form_vertical_edit').modal('hide');
-                    $("#table").DataTable().ajax.reload();
-                    swalInit({
-                        type: 'success',
-                        title : response,
-                    });
-                },
-                error: function(xhr){
-                    swalInit({
-                        type: 'error',
-                        title : xhr.responseText,
-                    });
+                unhighlight: function(element, errorClass) {
+                    $(element).removeClass(errorClass);
                 }
-            })
+            });
+
+            if(editForm.valid()){
+                const kelurahanNameEdit = $('#kelurahanNameEdit').val();
+                const alamat = $('#editForm').attr('action');
+                $.ajax({
+                    url : alamat,
+                    type: 'POST',
+                    data: {
+                        kelurahanName:kelurahanNameEdit,
+                        _token: '{{ csrf_token() }}',
+                        _method: 'PUT'
+                    },
+                    success:function(response){
+                        $('#modal_form_vertical_edit').modal('hide');
+                        $("#table").DataTable().ajax.reload();
+                        swalInit({
+                            type: 'success',
+                            title : response,
+                        });
+                    },
+                    error: function(xhr){
+                        swalInit({
+                            type: 'error',
+                            title : xhr.responseText,
+                        });
+                    }
+                })
+            }
         })
 
         $(document).on('click','.delete',function(){

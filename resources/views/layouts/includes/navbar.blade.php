@@ -1,7 +1,7 @@
 <div class="navbar navbar-expand-md navbar-dark bg-indigo navbar-static">
   <div class="navbar-brand">
-    <a href="index.html" class="d-inline-block">
-      <img src="{{ asset('limitless/global_assets/images/logo_light.png') }}" alt="">
+    <a href="#" >
+      <img src="{{ asset(FunctionHelper::getPanelLogoActive() ) }}">
     </a>
   </div>
 
@@ -21,6 +21,13 @@
           <i class="icon-paragraph-justify3"></i>
         </a>
       </li>
+    </ul>
+    <ul class="navbar-nav">
+        <li class="nav-item">
+            <a href="#" class="navbar-nav-link align-items-center text-center">
+                <span>{{ FunctionHelper::getTahunPelajaranDate() }}</span>
+            </a>
+        </li>
     </ul>
     <ul class="navbar-nav ml-md-auto">
       <li class="nav-item dropdown dropdown-user">

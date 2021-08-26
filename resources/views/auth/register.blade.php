@@ -77,7 +77,7 @@
 @endsection
  --}}
 
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -176,24 +176,12 @@
                                         </div>
                                     </div>
 
-                                    <div class="form-group form-group-feedback form-group-feedback-right">
-                                        <input type="email" class="form-control @error('email') is-invalid @enderror" placeholder="Masukan email" name="email" required>
-                                        <div class="form-control-feedback">
-                                            <i class="icon-mention text-muted"></i>
-                                        </div>
-                                        @error('name')
-                                            <span class="invalid-feedback" role="alert">
-                                                <strong>{{ $message }}</strong>
-                                            </span>
-                                        @enderror
-                                    </div>
-
                                     <div class="form-group">
                                         <textarea rows="3" cols="3" class="form-control @error('alamat') is-invalid @enderror" placeholder="Masukan Alamat" name="alamat" required></textarea>
                                     </div>
 
                                     <div class="form-group form-group-feedback form-group-feedback-right">
-                                        <input type="text" class="form-control @error('noHp') is-invalid @enderror" placeholder="Masukan No telephone" name="noHp" required>
+                                        <input type="tel" class="form-control @error('noHp') is-invalid @enderror" placeholder="Masukan No telephone" name="noHp" required>
                                         <div class="form-control-feedback">
                                             <i class="icon-phone2 text-muted"></i>
                                         </div>

@@ -4,14 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Sekolah;
-use App\Kelas;
+use Validator;
 use App\Kelurahan;
 use App\KelurahanMapping;
 use App\Imports\SekolahImport;
-use Alert;
 use DB;
 use URL;
-use session;
 use Response;
 use Excel;
 
@@ -57,7 +55,7 @@ class SekolahController extends Controller
      */
     public function store(Request $request)
     {
-        $this->validate($request,[
+        $validator = Validator::make($request->all(),[
             'npsn' => 'required|int|digits:8',
             'sekolahType' => 'required',
             'sekolahName' => 'required|string',
@@ -66,6 +64,10 @@ class SekolahController extends Controller
             'kecamatan' => 'required|string',
             'kotaAdministrasi' => 'required|string'
         ]);
+
+        if($validator->fails()){
+            return Response::json($validator->messages(),422);
+        }
 
         DB::beginTransaction();
         try {
@@ -114,9 +116,8 @@ class SekolahController extends Controller
     public function update(Request $request, $id)
     {
         // return $request->all();
-
-        $this->validate($request,[
-            'npsnEdit' => 'required|int',
+        $validator = Validator::make($request->all(),[
+            'npsnEdit' => 'required|int|digits:8',
             'sekolahTypeEdit' => 'required',
             'sekolahNameEdit' => 'required|string',
             'kelurahanEdit' => 'required',
@@ -124,6 +125,10 @@ class SekolahController extends Controller
             'kecamatanEdit' => 'required|string',
             'kotaAdministrasiEdit' => 'required|string'
         ]);
+
+        if($validator->fails()){
+            return Response::json($validator->messages(),422);
+        }
 
         DB::beginTransaction();
         try {
@@ -137,12 +142,8 @@ class SekolahController extends Controller
             $sekolah->kota_administrasi = $request->kotaAdministrasiEdit;
             $sekolah->save();
 
-            $kelurahanMapping = KelurahanMapping::where('sekolah_id',$id)->first();
-            $kelurahanMapping->kelurahan_id = $request->kelurahanEdit;
-            $kelurahanMapping->save();
             DB::commit();
-
-            return Response::json('Data sekolah berhasil ditambahkan',200);
+            return Response::json('Data sekolah berhasil diubah',200);
         } catch (\Exception $e) {
             DB::rollback();
             return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
@@ -178,9 +179,13 @@ class SekolahController extends Controller
 
     public function importExcelSekolah(Request $request)
     {
-        $this->validate($request,[
+        $validator = Validator::make($request->all(),[
             'file' => 'required|mimes:xls,xlsx'
         ]);
+
+        if($validator->fails()){
+            return Response::json($validator->messages(),422);
+        }
 
         if($request->hasFile('file'))
         {

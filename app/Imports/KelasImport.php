@@ -2,6 +2,7 @@
 
 namespace App\Imports;
 
+use DB;
 use App\Kelas;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;

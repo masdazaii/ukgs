@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use PDF;
 use Excel;
 use Carbon\Carbon;
 use App\Helpers\FunctionHelper;
@@ -14,11 +13,11 @@ use App\Siswa;
 use App\Kelas;
 use App\Kelurahan;
 use App\Pemeriksaan;
-use App\DetailPemeriksaanBw;
 use App\DetailPemeriksaanPtm;
 use App\DetailPemeriksaanGigi;
 use App\DetailPemeriksaanSosial;
 use App\DetailPemeriksaanImt;
+use App\TahunAjaran;
 
 class DashboardController extends Controller
 {
@@ -37,40 +36,42 @@ class DashboardController extends Controller
 	    	'pemeriksa' => User::count(),
     	];
 
-    	$tahunAjaran = [];
-    	$tempAjaran = FunctionHelper::getTahunPelajaran();
-    	for ($i=0; $i < 3 ; $i++) { 
-    		$arrAjaran = explode('/', $tempAjaran);
-    		$arrAjaran[0] -= $i;
-    		$arrAjaran[1] -= $i;
-    		$tahunAjaran[$i] = $arrAjaran[0].'-'.$arrAjaran[1];
-    	}
+        $tahunAjaran = TahunAjaran::select('tahun_ajaran_id','tahun_ajaran')
+                        ->get();
 
     	return view('dashboard.index',compact('top','tahunAjaran'));
     }
 
-    public function laporan($id)
+    public function laporan($id,$tahunAjaran)
     {
+        $tempTA = TahunAjaran::where('tahun_ajaran_id',$tahunAjaran)
+                ->select('tahun_ajaran_id','tahun_ajaran')
+                ->first();
+
+        $TA = explode('/',$tempTA->tahun_ajaran);
+
     	$sekolah = Sekolah::where('sekolah_id', $id)
 	    		->select('sekolah_id','sekolah_name')
 	    		->first();
-	    		
-	    $kelas = Kelas::where('sekolah_id',$id)
-	    		->with(['kelasMapping' => function($query){
-	    				$query->with(['siswa' => function($query){
-	    					$query->with(['pemeriksaan' => function($query){
-	    						$query->whereIn('jenis_pemeriksaan',[1,2,5]);
-	    						$query->select('pemeriksaan_id','siswa_id','jenis_pemeriksaan','rujukan');
-	    						$query->orderBy('jenis_pemeriksaan','ASC');
-	    					}]);
-	    					$query->select('siswa_id','nama','jenis_kelamin','usia');
-	    				}]);
-	    			}])
+
+        $kelas = Kelas::where('sekolah_id',$id)
+                ->with(['kelasMapping' => function($query)use($tahunAjaran){
+                    $query->where('tahun_pelajaran',$tahunAjaran)
+                    ->with(['siswa' => function($query){
+                        $query->withTrashed();
+                        $query->with(['pemeriksaan' => function($query){
+                            $query->whereIn('jenis_pemeriksaan',[1,2,5]);
+                            $query->select('pemeriksaan_id','siswa_id','jenis_pemeriksaan','rujukan');
+                            $query->orderBy('jenis_pemeriksaan','ASC');
+                        }]);
+                        $query->select('siswa_id','nama','jenis_kelamin','usia');
+                    }])->withTrashed();
+                }])
     			->select('sekolah_id','kelas_id','kelas_name')
     			->orderBy('kelas_name','ASC')
 	    		->get();
 
-	    for ($i=0; $i < count($kelas) ; $i++) { 
+	    for ($i=0; $i < count($kelas) ; $i++) {
          	for ($j=0; $j < count($kelas[$i]->kelasMapping) ; $j++) {
      			$deskripsi = Self::detailPemeriksaan($kelas[$i]->kelasMapping[$j]->siswa->pemeriksaan);
 	 			unset($kelas[$i]->kelasMapping[$j]->siswa->pemeriksaan);
@@ -78,10 +79,10 @@ class DashboardController extends Controller
          	}
         }
 
-	    return Excel::download(new PemeriksaanExportPerSheet($kelas),'Laporan Pemeriksann '.$sekolah->sekolah_name.'.xlsx');
+	    return Excel::download(new PemeriksaanExportPerSheet($kelas),'Laporan Pemeriksann '.$sekolah->sekolah_name.' tahun ajaran '.$TA[0].'-'.$TA[1].'.xlsx');
     }
 
-    public function detailPemeriksaan($collection)
+    public static function detailPemeriksaan($collection)
     {
     	$data = [];
     	if (count($collection) >= 3) {
@@ -177,7 +178,6 @@ class DashboardController extends Controller
 
     public function pemeriksaanChart($tahunPelajaran)
     {
-    	$tahunPelajaran = str_replace("-", "/", $tahunPelajaran);
     	$pemeriksaan = Pemeriksaan::select('siswa_id','created_at','rujukan')
     					->whereHas('siswa',function($query) use ($tahunPelajaran){
     						$query->whereHas('kelasMapping',function($query) use ($tahunPelajaran){
@@ -212,7 +212,6 @@ class DashboardController extends Controller
 
     public function ohisChart($tahunPelajaran)
     {
-    	$tahunPelajaran = str_replace("-", "/", $tahunPelajaran);
     	$kelurahan = Kelurahan::select('kelurahan_id','kelurahan_name')
     				->get();
     	$result = [];
@@ -244,7 +243,6 @@ class DashboardController extends Controller
 
     public function fsChart($tahunPelajaran)
     {
-    	$tahunPelajaran = str_replace("-", "/", $tahunPelajaran);
     	$kelurahan = Kelurahan::select('kelurahan_id','kelurahan_name')
     				->get();
     	$result = [];
@@ -276,7 +274,6 @@ class DashboardController extends Controller
 
     public function butaWarnaChart($tahunPelajaran)
     {
-    	$tahunPelajaran = str_replace("-", "/", $tahunPelajaran);
     	$kelurahan = Kelurahan::select('kelurahan_id','kelurahan_name')
     				->get();
     	$result = [];
@@ -303,7 +300,6 @@ class DashboardController extends Controller
 
     public function imtChart($tahunPelajaran)
     {
-    	$tahunPelajaran = str_replace("-", "/", $tahunPelajaran);
     	$kelurahan = Kelurahan::select('kelurahan_id','kelurahan_name')
     				->get();
     	$result = [
@@ -346,7 +342,6 @@ class DashboardController extends Controller
 
     public function sosialChart($tahunPelajaran)
     {
-    	$tahunPelajaran = str_replace("-", "/", $tahunPelajaran);
     	$kelurahan = Kelurahan::select('kelurahan_id','kelurahan_name')
     				->get();
     	$result = [
@@ -388,7 +383,6 @@ class DashboardController extends Controller
 
     public function kesehatanGusiChart($tahunPelajaran)
     {
-    	$tahunPelajaran = str_replace("-", "/", $tahunPelajaran);
     	$kelurahan = Kelurahan::select('kelurahan_id','kelurahan_name')
     				->get();
     	$result = [
@@ -428,7 +422,6 @@ class DashboardController extends Controller
 
     public function tekananDarahChart($tahunPelajaran)
     {
-    	$tahunPelajaran = str_replace("-", "/", $tahunPelajaran);
     	$kelurahan = Kelurahan::select('kelurahan_id','kelurahan_name')
     				->get();
 

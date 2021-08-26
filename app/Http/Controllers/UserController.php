@@ -4,9 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\User;
-use URL;
 use DB;
-use session;
 use Response;
 
 class UserController extends Controller
@@ -70,10 +68,14 @@ class UserController extends Controller
             if ($user->status == 1) {
                 $user->status = false;
                 $user->save();
+                DB::commit();
+
                 return Response::json("User telah dinonaktifkan",200);
             }else{
                 $user->status = true;
                 $user->save();
+                DB::commit();
+
                 return Response::json("User telah diaktifkan",200);
             }
         } catch (\Exception $e) {

@@ -48,6 +48,12 @@
 @endsection
 @section('script')
 	<script>
+        const swalInit = swal.mixin({
+            buttonsStyling: false,
+            confirmButtonClass: 'btn btn-primary',
+            cancelButtonClass: 'btn btn-light'
+        });
+
 		$(document).ready(function() {
             $("#table").DataTable({
                 "destroy": true,
@@ -69,10 +75,8 @@
         });
 
         $(document).on('click','.changeStatus',function(){
-            let btn = $(this);
             const id = $(this).data("id");
             let uri = '{{ url('changeStatus') }}';
-            console.log(uri);
             $.ajax({
                 url : uri,
                 method : 'GET',
@@ -81,7 +85,7 @@
                 },
                 success:function(response){
                     $("#table").DataTable().ajax.reload();
-                    Swal.fire({
+                    swalInit({
                         type: 'success',
                         title : response,
                     });

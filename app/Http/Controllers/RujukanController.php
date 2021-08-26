@@ -35,8 +35,8 @@ class RujukanController extends Controller
 
     public function rujukanAjax($sekolahId)
     {
-    	$data = Pemeriksaan::where('rujukan',true)
-    			->with(['detailRujukan' => function($query){
+        $data = Pemeriksaan::whereHas('detailRujukan')
+                ->with(['detailRujukan' => function($query){
     				$query->with('user');
     			},'jenisPemeriksaan', 'siswa'])
                 ->whereHas('siswa', function($query) use ($sekolahId){
@@ -45,12 +45,11 @@ class RujukanController extends Controller
                             $query->where('sekolah_id',$sekolahId);
                         });
                     });
-                });
-        // return $data;
-
+                })
+                ->get();
 
        	return datatables()->of($data)
-            ->addColumn('action',function($data) use ($sekolahId){
+            ->addColumn('action',function($data){
                 $button = '';
                 if (isset($data->detailRujukan->penangan)){
                 	$button .= '
@@ -69,7 +68,7 @@ class RujukanController extends Controller
             })
             ->editColumn('deskripsi',function($data){
                 if(isset($data->detailRujukan->deskripsi)){
-                	return $data->detailRujukan->deskripsi;								
+                	return $data->detailRujukan->deskripsi;
                 }else{
                 	return "Tidak ada deskripsi";
                 }

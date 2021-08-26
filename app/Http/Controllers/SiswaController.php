@@ -3,17 +3,15 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Sekolah;
 use App\Kelas;
 use App\Siswa;
+use App\TahunAjaran;
 use App\KelasMapping;
 use App\Imports\SiswaImport;
 use App\Helpers\FunctionHelper;
 use Excel;
 use Response;
-use session;
 use DB;
-use URL;
 
 class SiswaController extends Controller
 {
@@ -34,14 +32,16 @@ class SiswaController extends Controller
                 ->where('kelas_id',$kelasId)
                 ->first();
 
+        $tahunAjaran = TahunAjaran::select('tahun_ajaran_id','tahun_ajaran')
+                        ->get();
+
         $existingKelas = Kelas::where('sekolah_id',$sekolahId)->get();
         // return $kelas;
-        return view('siswa.index',compact('kelas','existingKelas'));
+        return view('siswa.index',compact('kelas','existingKelas','tahunAjaran'));
     }
 
     public function siswaAjax($sekolahId,$kelasId)
     {
-        // return $kelasId;
         $data = KelasMapping::where('kelas_id',$kelasId)
                 ->where('tahun_pelajaran',FunctionHelper::getTahunPelajaran())
                 ->with(['kelas' => function($query){
@@ -53,7 +53,6 @@ class SiswaController extends Controller
                 ->select('kelas_mapping_id','kelas_id','siswa_id','tahun_pelajaran')
                 ->get();
 
-                // return $data;
         return datatables()->of($data)
             ->addColumn('action',function($data){
             $button = '';
@@ -224,29 +223,31 @@ class SiswaController extends Controller
         $kelasId = $request->kelasId;
         if($request->hasFile('file'))
         {
-            try {
+            // try {
                 $file = $request->file('file');
                 Excel::import(new SiswaImport($kelasId),$file);
-                return Response::json('Berhasil data siswa excel berhasil dimasukkan',200);
-            } catch (\Exception $e) {
-                return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
-            }
+            //     return Response::json('Berhasil data siswa excel berhasil dimasukkan',200);
+            // // } catch (\Exception $e) {
+            // //     return Response::json('Terdapat kesalahan,silahkan hubungi pengembang',500);
+            // // }
         }
     }
 
 
     public function naikKelas(Request $request,$sekolahId,$kelasId)
     {
+        // return count($request->selected);
         $siswaNaikKelas = $request->selected;
         $kelasTujuan = $request->kelasTujuan;
+        $tahunAjaran = $request->tahunAjaran;
 
         DB::beginTransaction();
         try {
-            for ($i=0; $i < count($siswaNaikKelas); $i++) { 
+            for ($i=0; $i < count($siswaNaikKelas); $i++) {
                 $kelasMapping = new KelasMapping;
                 $kelasMapping->siswa_id = $siswaNaikKelas[$i];
                 $kelasMapping->kelas_id = $kelasTujuan;
-                $kelasMapping->tahun_pelajaran = FunctionHelper::getTahunPelajaran();
+                $kelasMapping->tahun_pelajaran = $tahunAjaran;
                 $kelasMapping->save();
 
                 $existingKelasMapping = KelasMapping::where('siswa_id',$siswaNaikKelas[$i])

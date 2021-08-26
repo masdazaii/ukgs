@@ -6,7 +6,8 @@ use Illuminate\Http\Request;
 use App\Pemeriksaan;
 use App\DetailPemeriksaanPtm;
 use App\DetailRujukan;
-use URL;
+use App\Helpers\FunctionHelper;
+use Validator;
 use DB;
 use Auth;
 use Response;
@@ -17,7 +18,7 @@ class PemeriksaanPtmController extends Controller
     {
         $this->middleware('auth');
     }
-    
+
     /**
      * Display a listing of the resource.
      *
@@ -31,16 +32,19 @@ class PemeriksaanPtmController extends Controller
     public function detailPemeriksaanPtmAjax($id,$sekolahId)
     {
 
-         $data = Pemeriksaan::where('jenis_pemeriksaan',$id)
+         $data = Pemeriksaan::where('tahun_ajaran',FunctionHelper::getTahunPelajaran())
+                ->where('jenis_pemeriksaan',$id)
                 ->with('detailPemeriksaanPtm','pemeriksa', 'siswa')
                 ->whereHas('siswa', function($query) use ($sekolahId){
                     $query->whereHas('kelasMapping', function($query) use ($sekolahId){
+                        $query->where('tahun_pelajaran',FunctionHelper::getTahunPelajaran());
                         $query->whereHas('kelas', function($query) use ($sekolahId){
                             $query->where('sekolah_id',$sekolahId);
                         });
                     });
                 })
-                ->orderBy('created_at','DESC');    
+                ->orderBy('created_at','DESC')
+                ->get();
 
         return datatables()->of($data)
             ->addColumn('action',function($data) use ($id,$sekolahId){
@@ -75,7 +79,7 @@ class PemeriksaanPtmController extends Controller
      */
     public function store(Request $request)
     {
-        $this->validate($request,[
+        $validator = Validator::make($request->all(),[
             'sistolik' => 'required',
             'diastolik' =>'required',
             'lingkarPinggang' =>'required',
@@ -84,12 +88,17 @@ class PemeriksaanPtmController extends Controller
             'siswaId' => 'required'
         ]);
 
+        if($validator->fails()){
+            return Response::json($validator->messages(),422);
+        }
+
         DB::beginTransaction();
         try {
             $pemeriksaanPtm = new Pemeriksaan;
             $pemeriksaanPtm->pemeriksa_id = Auth::user()->id;
             $pemeriksaanPtm->jenis_pemeriksaan = $request->jenisPemeriksaan;
             $pemeriksaanPtm->siswa_id = $request->siswaId;
+            $pemeriksaanPtm->tahun_ajaran = FunctionHelper::getTahunPelajaran();
             $pemeriksaanPtm->rujukan = $request->rujukan;
             $pemeriksaanPtm->save();
 
@@ -101,7 +110,7 @@ class PemeriksaanPtmController extends Controller
                 if (isset($request->deskripsi)) {
                     $rujukan->deskripsi = $request->deskripsi;
                 }
-                $rujukan->save(); 
+                $rujukan->save();
             }
 
             $detailPemeriksaanPtm = new DetailPemeriksaanPtm;
@@ -141,13 +150,16 @@ class PemeriksaanPtmController extends Controller
      */
     public function update(Request $request, $id)
     {
-        
-        $this->validate($request,[
+        $validator = Validator::make($request->all(),[
             'sistolik' => 'required',
             'diastolik' =>'required',
             'lingkarPinggang' =>'required',
             'gulaDarah' =>'required'
         ]);
+
+        if($validator->fails()){
+            return Response::json($validator->messages(),422);
+        }
 
         DB::beginTransaction();
         try {
@@ -160,7 +172,7 @@ class PemeriksaanPtmController extends Controller
             $detailPemeriksaanPtm->save();
 
             $pemeriksaanPtm = Pemeriksaan::findOrFail($id);
-            if ($pemeriksaanPtm->rujukan == 0 && $request->rujukan == 1) {
+            if ($pemeriksaanPtm->rujukan == 0 && $request->rujukanEdit == 1) {
                 $detailRujukan = new DetailRujukan;
                 $detailRujukan->pemeriksaan_id = $id;
                 if (isset($request->deskripsi)) {
@@ -168,20 +180,20 @@ class PemeriksaanPtmController extends Controller
                 }
                 $detailRujukan->save();
 
-                $pemeriksaanPtm->rujukan = $request->rujukan;
+                $pemeriksaanPtm->rujukan = $request->rujukanEdit;
                 $pemeriksaanPtm->save();
             }else if($pemeriksaanPtm->rujukan == 1){
-                if ($request->rujukan == 1) {
+                if ($request->rujukanEdit == 1) {
                     $detailRujukan = DetailRujukan::where('pemeriksaan_id',$id)->first();
                     if (isset($request->deskripsi)) {
                         $detailRujukan->deskripsi = $request->deskripsi;
                     }
                     $detailRujukan->save();
-                }else{
+                }else if($request->rujukanEdit == 0){
                     $detailRujukan = DetailRujukan::where('pemeriksaan_id',$id)->first();
                     $detailRujukan->delete();
 
-                    $pemeriksaanPtm->rujukan = $request->rujukan;
+                    $pemeriksaanPtm->rujukan = $request->rujukanEdit;
                     $pemeriksaanPtm->save();
                 }
             }

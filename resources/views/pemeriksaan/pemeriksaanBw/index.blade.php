@@ -30,7 +30,7 @@
                         <tr>
                             <th>NPSN</th>
                             <th>Nama Sekolah</th>
-                            <th>Kota Administrasi</th>
+                            <th>Alamat</th>
                             <th width="25%">Action</th>
                         </tr>
                     </thead>
@@ -62,7 +62,7 @@
                 "columns": [
                     {data: 'npsn',name:'npsn'},
                     {data: 'sekolah_name', name: 'sekolah_name'},
-                    {data: 'kota_administrasi', name: 'kota_administrasi'},
+                    {data: 'alamat', name: 'alamat'},
                     {data: 'action', name: 'action', "orderable": false, "searchable": false}
                 ],
                 "fixedColumns": true,

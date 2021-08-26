@@ -74,7 +74,7 @@
 			<select class="form-control" id="tahunAjaran">
 				<option>Pilih tahun ajaran</option>
 				@for($i = 0; $i < count($tahunAjaran); $i++)
-					<option value="{{$tahunAjaran[$i]}}">{{$tahunAjaran[$i] }}</option>
+					<option value="{{$tahunAjaran[$i]->tahun_ajaran_id}}">{{$tahunAjaran[$i]->tahun_ajaran }}</option>
 				@endfor
 			</select>
 		</div>
@@ -361,7 +361,7 @@
 
             function fsChart(tahunAjaran){
             	let fsUrl = '{{ route('fsChart',':id') }}';
-            	fsUrl = fsUrl.replace(':id',tahunAjaran); 
+            	fsUrl = fsUrl.replace(':id',tahunAjaran);
             	c3.generate({
 	            bindto:'#fsChart',
 	                size: { width: 250 },

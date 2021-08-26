@@ -11,6 +11,8 @@
 |
 */
 
+use App\KustomGambar;
+
 Auth::routes();
 
 Route::get('/','DashboardController@index');
@@ -58,8 +60,14 @@ Route::resource('pemeriksaanBw','PemeriksaanBwController');
 //Soal Bua Warna
 Route::resource('soalButaWarna','SoalButaWarnaController');
 
-//user 
+//user
 Route::resource('user','UserController');
+
+//Logo
+Route::resource('logo', 'LogoController');
+
+//Tahun Ajaran
+Route::resource('tahunAjaran', 'TahunAJaranController');
 
 //Riwayat Pemeriksaan
 Route::get('riwayatPemeriksaan', 'RiwayatController@index');
@@ -72,14 +80,13 @@ Route::resource('rujukan','RujukanController');
 
 //Laporan
 Route::get('laporan','LaporanController@index');
-Route::get('laporan/{id}','DashboardController@laporan')->name('laporan');
+Route::get('laporan/{id}/{tahunAjaran}','DashboardController@laporan')->name('laporan');
 Route::get('cekPeriksaSekolah','LaporanController@cekPeriksaSekolah');
 
-Route::get('/pemeriksaan','ExController@pemeriksaan');
-
 //Ajax
+Route::get('tahunAjaranAjax','TahunAjaranController@tahunAjaranAjax');
 Route::get('kelasEditAjax','KelasController@kelasEditAjax');
-Route::get('siswaEditAjax','SiswaController@siswaEditAjax');
+Route::get('EditAjax','SiswaController@siswaEditAjax');
 Route::post('importExcelSekolah','SekolahController@importExcelSekolah');
 Route::post('importExcelSiswa','SiswaController@importExcelSiswa');
 Route::post('importExcelKelas','KelasController@importExcelKelas');
@@ -100,6 +107,9 @@ Route::get('typeahead','RujukanController@typeahead');
 Route::get('typeaheadRiwayat','RiwayatController@typeaheadRiwayat');
 Route::get('rujukanAjax/{sekolahId}','RujukanController@rujukanAjax')->name('rujukanAjax');
 Route::post('tangani/{id}','RujukanController@tangani')->name('tangani');
+Route::get('kustomGambarAjax','LogoController@kustomGambarAjax');
+Route::post('manage/{id}','LogoController@manage')->name('manage');
+Route::post('manageTahunAjaran/{tahunAjaranId}','TahunAjaranController@manage')->name('manageTahunAjaran');
 
 //Ajax Chart
 Route::get('pemeriksaanChart/{tahunPelajaran}','DashboardController@pemeriksaanChart')->name('pemeriksaanChart');

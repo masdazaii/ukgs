@@ -4,17 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Pemeriksaan;
-use App\Sekolah;
-use App\Kelas;
-use App\Siswa;
 use App\DetailPemeriksaanGigi;
 use App\indekKaries;
-use App\KelasMapping;
 use App\DetailRujukan;
 use App\Helpers\FunctionHelper;
 use DB;
 use URL;
-use session;
 use Auth;
 use Response;
 
@@ -36,7 +31,8 @@ class PemeriksaanGigiController extends Controller
 
     public function detailPemeriksaanGigiAjax($id,$sekolahId)
     {
-        $data = Pemeriksaan::where('jenis_pemeriksaan',$id)
+        $data = Pemeriksaan::where('tahun_ajaran',FunctionHelper::getTahunPelajaran())
+                ->where('jenis_pemeriksaan',$id)
                 ->with(['detailRujukan',
                     'detailPemeriksaanGigi' => function($query){
                         $query->select('pemeriksaan_gigi_id','ohis');
@@ -54,7 +50,8 @@ class PemeriksaanGigiController extends Controller
                     });
                 })
                 ->select('pemeriksaan_id','pemeriksa_id','siswa_id','rujukan','jenis_pemeriksaan','created_at')
-                ->orderBy('created_at','DESC');
+                ->orderBy('created_at','DESC')
+                ->get();
 
         return datatables()->of($data)
             ->addColumn('action',function($data) use ($id){
@@ -100,7 +97,7 @@ class PemeriksaanGigiController extends Controller
                             },'siswa' => function($query){
                                 $query->select('siswa_id','nama','nis','jenis_kelamin','usia');
                             }])
-                            ->select('pemeriksaan_id','pemeriksa_id','siswa_id','rujukan')
+                            ->select('pemeriksaan_id','pemeriksa_id','siswa_id','rujukan','created_at')
                             ->first();
 
         $olah = FunctionHelper::olahIndekKaries($pemeriksaanGigi->detailPemeriksaanGigi->indekKaries);
@@ -140,21 +137,21 @@ class PemeriksaanGigiController extends Controller
         $debrisKalkulus = [];
         $debrisKalkulusValue = [];
 
-        for ($i=1; $i < 7; $i++) { 
+        for ($i=1; $i < 7; $i++) {
             $debris = 'debris'.$i;
             $param = 'debris_'.$i;
             array_push($debrisKalkulus, $debris);
             array_push($debrisKalkulusValue,$pemeriksaanGigi->detailPemeriksaanGigi->$param);
         }
 
-        for ($i=1; $i < 7; $i++) { 
+        for ($i=1; $i < 7; $i++) {
             $kalkulus = 'kalkulus'.$i;
             $param = 'kalkulus_'.$i;
             array_push($debrisKalkulus, $kalkulus);
             array_push($debrisKalkulusValue,$pemeriksaanGigi->detailPemeriksaanGigi->$param);
         }
 
-        for ($i=0; $i < count($indekKaries) ; $i++) { 
+        for ($i=0; $i < count($indekKaries) ; $i++) {
             if (substr($indekKaries[$i]->posisi_gigi,0,2) == "gd" ) {
                 array_push($posisiGd,$indekKaries[$i]->posisi_gigi);
                 array_push($keadaanGd,$indekKaries[$i]->keadaan_gigi);
@@ -215,12 +212,6 @@ class PemeriksaanGigiController extends Controller
         try {
             $pemeriksaanGigi = Pemeriksaan::findOrFail($id);
             $pemeriksaanGigi->pemeriksa_id = Auth::user()->id;
-            $pemeriksaanGigi->rujukan = $request->rujukan;
-            $pemeriksaanGigi->save();
-
-            $detailPemeriksaanGigi = DetailPemeriksaanGigi::where('pemeriksaan_gigi_id',$id)->first();
-            $detailPemeriksaanGigi->exo_pers = $request->exoPers;
-            $detailPemeriksaanGigi->fs = $request->fs;
 
             if ($request->rujukan == 1) {
                 if ($pemeriksaanGigi->rujukan == 0) {
@@ -231,7 +222,7 @@ class PemeriksaanGigiController extends Controller
                 }else{
                     $rujukan = DetailRujukan::where('pemeriksaan_id',$id)->first();
                     $rujukan->deskripsi = $request->deskripsi;
-                    $rujukan->save(); 
+                    $rujukan->save();
                 }
             }else{
                 if ($pemeriksaanGigi->rujukan == 1) {
@@ -240,14 +231,21 @@ class PemeriksaanGigiController extends Controller
                     $pemeriksaanGigi->rujukan = 0;
                 }
             }
-            
-            for ($i=1; $i <= 6; $i++) { 
+
+            $pemeriksaanGigi->rujukan = $request->rujukan;
+            $pemeriksaanGigi->save();
+
+            $detailPemeriksaanGigi = DetailPemeriksaanGigi::where('pemeriksaan_gigi_id',$id)->first();
+            $detailPemeriksaanGigi->exo_pers = $request->exoPers;
+            $detailPemeriksaanGigi->fs = $request->fs;
+
+            for ($i=1; $i <= 6; $i++) {
                 $req = 'debris'.$i;
                 $table = 'debris_'.$i;
                 $detailPemeriksaanGigi->$table = $request->$req;
             }
 
-            for ($i=1; $i <= 6; $i++) { 
+            for ($i=1; $i <= 6; $i++) {
                 $req = 'kalkulus'.$i;
                 $table = 'kalkulus_'.$i;
                 $detailPemeriksaanGigi->$table = $request->$req;
@@ -332,6 +330,7 @@ class PemeriksaanGigiController extends Controller
             $pemeriksaan->pemeriksa_id = Auth::user()->id;
             $pemeriksaan->siswa_id = $id;
             $pemeriksaan->jenis_pemeriksaan = $request->jenisPemeriksaan;
+            $pemeriksaan->tahun_ajaran = FunctionHelper::getTahunPelajaran();
             $pemeriksaan->rujukan = $request->rujukan;
             $pemeriksaan->save();
 
@@ -343,21 +342,21 @@ class PemeriksaanGigiController extends Controller
                 if (isset($request->deskripsi)) {
                     $rujukan->deskripsi = $request->deskripsi;
                 }
-                $rujukan->save(); 
+                $rujukan->save();
             }
 
             $detailPemeriksaanGigi = new DetailPemeriksaanGigi;
             $detailPemeriksaanGigi->pemeriksaan_gigi_id = $pemeriksaanId;
             $detailPemeriksaanGigi->exo_pers = $request->exoPers;
             $detailPemeriksaanGigi->fs = $request->fs;
-            
-            for ($i=1; $i <= 6; $i++) { 
+
+            for ($i=1; $i <= 6; $i++) {
                 $req = 'debris'.$i;
                 $table = 'debris_'.$i;
                 $detailPemeriksaanGigi->$table = $request->$req;
-            }   
+            }
 
-            for ($i=1; $i <= 6; $i++) { 
+            for ($i=1; $i <= 6; $i++) {
                 $req = 'kalkulus'.$i;
                 $table = 'kalkulus_'.$i;
                 $detailPemeriksaanGigi->$table = $request->$req;

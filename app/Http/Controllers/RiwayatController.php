@@ -8,7 +8,6 @@ use App\Kelas;
 use App\Sekolah;
 use App\KelasMapping;
 use App\Pemeriksaan;
-use Carbon\Carbon;
 use Response;
 
 class RiwayatController extends Controller
@@ -47,10 +46,11 @@ class RiwayatController extends Controller
     public function riwayatSiswa(Request $request)
     {
     	$siswa = KelasMapping::where('kelas_id',$request->kelasId)
-    			->withTrashed()
+                ->withTrashed()
+                ->with('tahunAjaran')
     			->with(['siswa' => function($query){
     				$query->withTrashed();
-    				$query->select('siswa_id','nama');
+                    $query->select('siswa_id','nama');
     			}])
     			->select('tahun_pelajaran','siswa_id')
     			->get();
@@ -62,24 +62,19 @@ class RiwayatController extends Controller
     {
     	$exploder = explode('|',$request->data);
     	$id = $exploder[0];
-    	$tahunAjaran = $exploder[1];
-    	// return $tahunAjaran;
+        $tahunAjaran = $exploder[1];
 
-    	$result = Pemeriksaan::withTrashed()
+        $result = Pemeriksaan::withTrashed()
+                    ->where('tahun_ajaran',$tahunAjaran)
     				->where('siswa_id',$id)
-    				->select('pemeriksaan_id','pemeriksa_id','siswa_id','created_at','rujukan','jenis_pemeriksaan')
-    				->get()
-    				->toArray();
+                    ->select('pemeriksaan_id','pemeriksa_id','siswa_id','created_at','rujukan','jenis_pemeriksaan')
+                    ->orderBy('created_at','desc')
+                    ->get()
+                    ->unique('jenis_pemeriksaan')
+                    ->toArray();
+                    // return $tahunAjaran;
 
-    	// $fuck = FunctionHelper::createdatConverter($result[0]->created_at);
-    	for($i = 0;$i < count($result); $i++){
-    		if(FunctionHelper::createdatConverter($result[$i]['created_at']) != $tahunAjaran)
-    		{
-    			unset($result[$i]);
-    		}
-    	}
-
-    	sort($result);
+        sort($result);
 
     	$mapping = FunctionHelper::pemeriksaanMapping($result);
 

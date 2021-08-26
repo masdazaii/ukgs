@@ -5,6 +5,7 @@
 <!-- /core JS files -->
 
 <script src="{{ asset('limitless/layout_1/assets/js/app.js') }}"></script>
+<script src="{{ asset('limitless/layout_1/assets/js/custom.js') }}"></script>
 <!-- /theme JS files -->
 
 @yield('librariesJS')

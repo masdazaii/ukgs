@@ -13,10 +13,8 @@
 		      		<div class="breadcrumb">
 		      			{{-- Breadcrumb content --}}
 		        		<a href="{{ URL::to('/') }}" class="breadcrumb-item"><i class="icon-home2 mr-2"></i> Home</a>
-                        <a href="{{ URL::to('/pemeriksaanSosial') }}" class="breadcrumb-item"> Pemeriksaan Sosial</a>
-		        		<span class="breadcrumb-item active">Create</span>
+		        		<span class="breadcrumb-item active">Pemeriksaan Sosial</span>
 		      		</div>
-		      		<a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
 		    	</div>
 		  	</div>
 		</div>
@@ -24,6 +22,7 @@
 
 	<div class="card">
         <div class="card-body">
+            <h4><span class="font-weight-semibold">Hasil Pemeriksaan sosial {{ $sekolah->sekolah_name }}</span></h4>
             <div class="table-responsive">
                 <table class="table table-striped" id="table">
                     <thead>
@@ -66,7 +65,7 @@
                             <label class="col-form-label col-md-2" >Pilih siswa</label>
                             <div class="col-md-10">
                                 <select id="pilihSiswa" class="form-control" name="pilihSiswa">
-                                    <option>Silahkan pilih siswa yang akan diperiksa</option>               
+                                    <option value="default">Silahkan pilih siswa yang akan diperiksa</option>
                                 </select>
                             </div>
                         </div>
@@ -207,8 +206,6 @@
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
                 <form id="editForm" action="" method="post" enctype="multipart/form-data">
-                    @csrf
-                    {{ method_field('PUT') }}
                     <div class="modal-body">
                         <div class="form-group">
                             <label class="d-block font-weight-semibold">Pernah Merokok</label>
@@ -351,7 +348,7 @@
                     },
                     success : function(response){
                         if(response.length > 0){
-                            $('#pilihSiswa').append('<option>Silahkan pilih siswa</option>')
+                            $('#pilihSiswa').append('<option value="default">Silahkan pilih siswa</option>')
                             for (let i = 0; i < response.length; i++) {
                                 $('#pilihSiswa').append('<option value='+response[i].siswa.siswa_id+'>'+response[i].siswa.nama+'</option>')
                             }
@@ -437,7 +434,16 @@
                     }
                 });
 
-                if(createForm.valid() && siswaForm.valid()){
+                const select = document.getElementById('pilihSiswa');
+                const selVal = select.options[select.selectedIndex].value;
+                if(selVal == "default"){
+                    swalInit({
+                        type: 'warning',
+                        title : "Silahkan pilih kelas dan siswa yang akan diperiksa",
+                    });
+                }
+
+                if(createForm.valid() && siswaForm.valid() && selVal != "default"){
                     const request = $('#sosialForm').serializeArray();
                     request.push({name:"deskripsi",value:$('#deskripsi').val() })
                     request.push({name:"siswaId",value:siswaId});
@@ -448,6 +454,7 @@
                         method : 'POST',
                         data : request,
                         success: function(response){
+                            $("#pilihSiswa option").remove();
                             siswaForm[0].reset();
                             createForm[0].reset();
                             $("#detailForm")[0].reset();
@@ -501,7 +508,7 @@
                     if (data.rujukan == false) {
                         rbRujukan[0].checked= true;
                     }else{
-                        rbRujukan[1].checked= true; 
+                        rbRujukan[1].checked= true;
                     }
 
                     if(data.rujukan == 1){

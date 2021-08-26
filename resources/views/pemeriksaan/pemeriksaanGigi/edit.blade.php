@@ -12,9 +12,9 @@
 		    	<div class="d-flex">
 		      		<div class="breadcrumb">
 		        		<a href="{{ URL::to('/') }}" class="breadcrumb-item"><i class="icon-home2 mr-2"></i> Home</a>
-		        		<span class="breadcrumb-item active">Pemeriksaan Gigi</span>
+		        		<a href="{{ URL::to('/pemeriksaan/1/periksa/'.$sekolahId) }}" class="breadcrumb-item">Pemeriksaan Gigi</a>
+		        		<span class="breadcrumb-item active">Edit Pemeriksaan Gigi</span>
 		      		</div>
-		      		<a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
 		    	</div>
 		  	</div>
 		</div>
@@ -432,14 +432,14 @@
 					<div class="col-md-9">
 						<table class="table table-responsive">
 							<tr>
-								<input class="col-sm-4 debris_kalkulus" name="debris1" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->debris_1}}">
-								<input class="col-sm-4 debris_kalkulus" name="debris2" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->debris_2}}">
-								<input class="col-sm-4 debris_kalkulus" name="debris3" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->debris_3}}">
+								<input type="number" min="0" max="6" required class="col-sm-4 debris_kalkulus" name="debris1" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->debris_1}}">
+								<input type="number" min="0" max="6" required class="col-sm-4 debris_kalkulus" name="debris2" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->debris_2}}">
+								<input type="number" min="0" max="6" required class="col-sm-4 debris_kalkulus" name="debris3" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->debris_3}}">
 							</tr>
 							<tr>
-								<input class="col-sm-4 debris_kalkulus" name="debris4" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->debris_4}}">
-								<input class="col-sm-4 debris_kalkulus" name="debris5" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->debris_5}}">
-								<input class="col-sm-4 debris_kalkulus" name="debris6" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->debris_6}}">
+								<input type="number" min="0" max="6" required class="col-sm-4 debris_kalkulus" name="debris4" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->debris_4}}">
+								<input type="number" min="0" max="6" required class="col-sm-4 debris_kalkulus" name="debris5" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->debris_5}}">
+								<input type="number" min="0" max="6" required class="col-sm-4 debris_kalkulus" name="debris6" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->debris_6}}">
 							</tr>
 						</table>
 					</div>
@@ -449,14 +449,14 @@
 					<div class="col-md-9">
 						<table class="table table-responsive">
 							<tr>
-								<input class="col-md-4 debris_kalkulus" name="kalkulus1" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->kalkulus_1}}">
-								<input class="col-md-4 debris_kalkulus" name="kalkulus2" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->kalkulus_2}}">
-								<input class="col-md-4 debris_kalkulus" name="kalkulus3" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->kalkulus_3}}">
+								<input type="number" min="0" max="6" required class="col-md-4 debris_kalkulus" name="kalkulus1" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->kalkulus_1}}">
+								<input type="number" min="0" max="6" required class="col-md-4 debris_kalkulus" name="kalkulus2" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->kalkulus_2}}">
+								<input type="number" min="0" max="6" required class="col-md-4 debris_kalkulus" name="kalkulus3" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->kalkulus_3}}">
 							</tr>
 							<tr>
-								<input class="col-md-4 debris_kalkulus" name="kalkulus4" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->kalkulus_4}}">
-								<input class="col-md-4 debris_kalkulus" name="kalkulus5" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->kalkulus_5}}">
-								<input class="col-md-4 debris_kalkulus" name="kalkulus6" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->kalkulus_6}}">
+								<input type="number" min="0" max="6" required class="col-md-4 debris_kalkulus" name="kalkulus4" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->kalkulus_4}}">
+								<input type="number" min="0" max="6" required class="col-md-4 debris_kalkulus" name="kalkulus5" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->kalkulus_5}}">
+								<input type="number" min="0" max="6" required class="col-md-4 debris_kalkulus" name="kalkulus6" required value="{{ $pemeriksaanGigi->detailPemeriksaanGigi->kalkulus_6}}">
 							</tr>
 						</table>
 					</div>
@@ -612,6 +612,11 @@
 @section('script')
 	<script>
 		$(document).ready(function(){
+            const swalInit = swal.mixin({
+                buttonsStyling: false,
+                confirmButtonClass: 'btn btn-primary',
+                cancelButtonClass: 'btn btn-light'
+            });
 
 			$('input[name="rujukan"]').on('change',function(){
                 const val = $(this).val();
@@ -644,7 +649,7 @@
 						name.splice(index,1);
 						value.splice(index,1);
 					}else{
-						value[index] = attrValue;	
+						value[index] = attrValue;
 					}
 				}else{
 					name.push(attrName);
@@ -670,7 +675,7 @@
 				fs["dmf"] = dmf;
 
 
-				if (fs["dmf"] > 1 && fs["def"] > 4){
+				if (fs["dmf"] > 1 || fs["def"] > 4){
 					$('.fsPlus').prop('checked',true);
 					$('.fsMinus').prop('checked',false);
 				} else {
@@ -697,7 +702,7 @@
 						nameGigiSulung.splice(index,1);
 						valueGigiSulung.splice(index,1);
 					}else{
-						valueGigiSulung[index] = attrValue;	
+						valueGigiSulung[index] = attrValue;
 					}
 				}else{
 					nameGigiSulung.push(attrName);
@@ -722,11 +727,10 @@
 				const def = D+E+F;
 				fs["def"] = def;
 
-				if (fs["dmf"] > 1 && fs["def"] > 4){
+				if (fs["dmf"] > 1 || fs["def"] > 4){
 					$('.fsPlus').prop('checked',true);
 					$('.fsMinus').prop('checked',false);
 				} else {
-					console.log("baik");
 					$('.fsPlus').prop('checked',false);
 					$('.fsMinus').prop('checked',true);
 				}
@@ -745,7 +749,7 @@
 				const name = $(this).attr('name');
 				const value = $(this).val();
 				let jumlah = 0;
-				
+
 				if(indeksName.includes(name) == true){
 					const index = indeksName.indexOf(name);
 					indeksValue[index] = value;
@@ -817,7 +821,6 @@
 
 					const exoPers = getValue('exoPers');
 					const fs = getValue('fs');
-					console.log(fs);
 					const debris1 = $('input[name="debris1"]').val();
 					const debris2 = $('input[name="debris2"]').val();
 					const debris3 = $('input[name="debris3"]').val();
@@ -835,7 +838,7 @@
 					const menyikatGigi = getValue('menyikatGigi');
 					const rujukan = getValue('rujukan');
 					const deskripsi = $("#deskripsi").val();
-					
+
 					//convert array to json
 					let gigiJson = [];
 					for(var i = 0; i  < name.length;i++)
@@ -883,7 +886,7 @@
 							_method: 'PUT'
 						},
 						success : function(response){
-							Swal.fire({
+							swalInit({
                                 type: 'success',
                                 title : response,
                             }).then(function(){
@@ -891,7 +894,7 @@
                             });
 						},
 						error:function(xhr,status,error){
-                            Swal.fire({
+                            swalInit({
                                 type: 'error',
                                 title : xhr.responseText,
                             });
