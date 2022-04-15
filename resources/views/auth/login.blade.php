@@ -2,6 +2,11 @@
 
 @section('content')
 <div class="container">
+    @session('message')
+        <span class="invalid-feedback" role="alert">
+            <strong>{{ $message }}</strong>
+        </span>
+    @endsession
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
@@ -71,6 +76,8 @@
     </div>
 </div>
 @endsection --}}
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -114,6 +121,13 @@
                 <div class="alert bg-success text-white alert-styled-left alert-dismissible">
                     <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
                     <span class="font-weight-semibold">{{ Session()->get('successRegister') }}</span>
+                </div>
+            @endif
+
+            @if(session()->has('message'))
+                <div class="alert bg-success text-white alert-styled-left">
+                    <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+                    <span class="font-weight-semibold">{{ Session()->get('message') }}</span>
                 </div>
             @endif
             <!-- Content area -->

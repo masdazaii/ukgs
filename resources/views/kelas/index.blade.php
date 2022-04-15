@@ -173,11 +173,7 @@
                         data: request,
                         success:function(response){
                             createForm[0].reset();
-<<<<<<< HEAD
-                            $("#table").DataTable().ajax.reload(null,false);
-=======
                             $("#table").DataTable().ajax.reload();
->>>>>>> ce8b6bc1e394407670490b79e84f900be89d0204
                             $('#modal_form_vertical').modal('hide');
                             swalInit({
                                 type: 'success',
